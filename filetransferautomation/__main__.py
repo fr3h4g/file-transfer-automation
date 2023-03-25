@@ -70,7 +70,7 @@ def local_directory_transfer(
 
 
 def run_task(task: tasks.Task):
-    """Run a task."""
+    """Run task."""
     task_id = str(uuid.uuid4())
     logging.info(
         f"Running task '{task.name}', id: {task.id}, task_id: {task_id}, thread {threading.get_native_id()}."
@@ -94,6 +94,7 @@ def run_task(task: tasks.Task):
 
 
 def run_task_threaded(task: tasks.Task):
+    """Run task in thread."""
     new_thread = threading.Thread(target=run_task, args=(task,))
     new_thread.start()
 
