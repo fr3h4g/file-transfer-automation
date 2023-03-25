@@ -5,8 +5,8 @@ import asyncio
 import logging
 import os
 import sys
-import uuid
 import threading
+import uuid
 
 from fastapi import FastAPI
 from scheduleplus.scheduler import Scheduler
