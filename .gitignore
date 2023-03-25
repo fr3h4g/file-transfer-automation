@@ -7,7 +7,8 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+.vscode
+.ruff_cache
 # C extensions
 *.so
 test-input

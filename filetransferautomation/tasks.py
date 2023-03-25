@@ -1,8 +1,7 @@
 from __future__ import annotations
-from typing import Literal, Optional
+from typing import Literal
 from dataclasses import dataclass
 from fastapi import APIRouter
-from pydantic import BaseModel
 import json
 
 # import pymysql
@@ -18,13 +17,13 @@ class Step:
     host_id: int
     step_type: Literal["source"] | Literal["process"] | Literal["destination"]
     type: str
-    directory: Optional[str] = ""
-    file_mask: Optional[str] = ""
-    filename: Optional[str] = ""
-    username: Optional[str] = ""
-    password: Optional[str] = ""
-    unc_share: Optional[str] = ""
-    share: Optional[str] = ""
+    directory: str | None = ""
+    file_mask: str | None = ""
+    filename: str | None = ""
+    username: str | None = ""
+    password: str | None = ""
+    unc_share: str | None = ""
+    share: str | None = ""
 
 
 @dataclass
