@@ -6,6 +6,7 @@ import logging
 import os
 import sys
 import uuid
+import threading
 
 from fastapi import FastAPI
 from scheduleplus.scheduler import Scheduler
@@ -71,7 +72,9 @@ def local_directory_transfer(
 def run_task(task: tasks.Task):
     """Run a task."""
     task_id = str(uuid.uuid4())
-    logging.info(f"Running task {task.name}, id: {task.id}, task_id: {task_id}")
+    logging.info(
+        f"Running task '{task.name}', id: {task.id}, task_id: {task_id}, thread {threading.get_native_id()}."
+    )
     task_directory = "./_work/" + task_id + "/"
     os.makedirs(task_directory, exist_ok=True)
     for step in task.steps:
@@ -84,6 +87,15 @@ def run_task(task: tasks.Task):
         if step.step_type == "destination" and step.type == "local_directory":
             local_directory_transfer(step, task_directory)
     os.removedirs(task_directory)
+    logging.info(f"Task '{task.name}', id: {task.id}, task_id: {task_id} completed.")
+    logging.info(
+        f"Exiting task '{task.name}', id: {task.id}, task_id: {task_id}, thread {threading.get_native_id()}."
+    )
+
+
+def run_task_threaded(task: tasks.Task):
+    new_thread = threading.Thread(target=run_task, args=(task,))
+    new_thread.start()
 
 
 async def main() -> None:
@@ -101,8 +113,8 @@ def startup():
     for task in tasks_data:
         if task.active:
             for schedule in task.schedules:
-                scheduler.cron(str(schedule.cron)).do_function(run_task, task)
-                run_task(task)
+                scheduler.cron(str(schedule.cron)).do_function(run_task_threaded, task)
+                run_task_threaded(task)
     logging.info(f"{len(tasks_data)} tasks loaded.")
     asyncio.ensure_future(main())
     scheduler.list_jobs()
