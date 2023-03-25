@@ -1,3 +1,4 @@
+"""Load settings from env vars."""
 import os
 
 from dotenv import load_dotenv

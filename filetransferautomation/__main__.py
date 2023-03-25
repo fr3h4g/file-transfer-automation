@@ -1,19 +1,18 @@
 """Start File Transfer Automation."""
 from __future__ import annotations
 
-import os
-from typing import Tuple
-import uuid
-import logging
-import sys
 import asyncio
-import uvicorn
+import logging
+import os
+import sys
+import uuid
+
 from fastapi import FastAPI
 from scheduleplus.scheduler import Scheduler
+import uvicorn
 
 from filetransferautomation import tasks
 from filetransferautomation.common import compare_filter
-
 
 logging.basicConfig(level=logging.INFO, stream=sys.stderr)
 
@@ -31,7 +30,8 @@ app.include_router(
 
 def local_directory_transfer(
     step: tasks.Step, task_directory: str
-) -> Tuple[bool, bool]:
+) -> tuple[bool, bool]:
+    """Get and Send files from and to local directory in a task."""
     files_found = False
 
     if not step.directory:
@@ -69,38 +69,39 @@ def local_directory_transfer(
 
 
 def run_task(task: tasks.Task):
+    """Run a task."""
     task_id = str(uuid.uuid4())
     logging.info(f"Running task {task.name}, id: {task.id}, task_id: {task_id}")
     task_directory = "./_work/" + task_id + "/"
     os.makedirs(task_directory, exist_ok=True)
     for step in task.steps:
-        if step.step_type == "source":
-            if step.type == "local_directory":
-                local_directory_transfer(step, task_directory)
+        if step.step_type == "source" and step.type == "local_directory":
+            local_directory_transfer(step, task_directory)
     for step in task.steps:
         if step.step_type == "process":
             pass
     for step in task.steps:
-        if step.step_type == "destination":
-            if step.type == "local_directory":
-                local_directory_transfer(step, task_directory)
+        if step.step_type == "destination" and step.type == "local_directory":
+            local_directory_transfer(step, task_directory)
     os.removedirs(task_directory)
 
 
-async def main():  # pragma: no cover
+async def main() -> None:
+    """Run all schedules."""
     while True:
         await asyncio.to_thread(scheduler.run_function_jobs)
         await asyncio.sleep(1)
 
 
 @app.on_event("startup")
-def startup():  # pragma: no cover
+def startup():
+    """Start File Transfer Automation."""
     logging.info("Loading tasks.")
     tasks_data = tasks.load_tasks()
     for task in tasks_data:
         if task.active:
             for schedule in task.schedules:
-                # scheduler.cron(str(schedule.cron)).do_function(run_task, task)
+                scheduler.cron(str(schedule.cron)).do_function(run_task, task)
                 run_task(task)
     logging.info(f"{len(tasks_data)} tasks loaded.")
     asyncio.ensure_future(main())

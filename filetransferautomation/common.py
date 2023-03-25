@@ -1,7 +1,9 @@
+"""Common functions."""
 import re
 
 
 def compare_filter(value: str, filter_value: str) -> bool:
+    """Filter for filename in tasks."""
     value = value.strip()
     filter_value_regex = filter_value.strip()
     filter_value_regex = "^" + filter_value_regex + "$"

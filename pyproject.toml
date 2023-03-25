@@ -38,9 +38,9 @@ select = [
     "SIM212",  # Use {a} if {a} else {b} instead of {b} if not {a} else {a}
     "SIM300",  # Yoda conditions. Use 'age == 42' instead of '42 == age'.
     "SIM401",  # Use get from dict with default instead of an if block
+    "SIM",
     "T20",     # flake8-print
     "TRY004",  # Prefer TypeError exception for invalid type
-    "RUF006",  # Store a reference to the return value of asyncio.create_task
     "UP",      # pyupgrade
     "W",       # pycodestyle
 ]
@@ -56,3 +56,12 @@ ignore = [
     # Ignored due to performance: https://github.com/charliermarsh/ruff/issues/2923
     "UP038", # Use `X | Y` in `isinstance` call instead of `(X, Y)`
 ]
+
+[tool.ruff.mccabe]
+max-complexity = 25
+
+[tool.isort]
+# https://github.com/PyCQA/isort/wiki/isort-Settings
+profile = "black"
+force_sort_within_sections = true
+combine_as_imports = true

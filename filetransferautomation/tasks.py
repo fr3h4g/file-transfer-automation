@@ -1,19 +1,24 @@
+"""Tasks api."""
 from __future__ import annotations
-from typing import Literal
+
 from dataclasses import dataclass
-from fastapi import APIRouter
 import json
+from typing import Literal
+
+from fastapi import APIRouter
 
 # import pymysql
 import pymysql.cursors
 
-from filetransferautomation.settings import MYSQL_DB, MYSQL_HOST, MYSQL_USER, MYSQL_PASS
+from filetransferautomation.settings import MYSQL_DB, MYSQL_HOST, MYSQL_PASS, MYSQL_USER
 
 router = APIRouter()
 
 
 @dataclass
 class Step:
+    """Task Step."""
+
     host_id: int
     step_type: Literal["source"] | Literal["process"] | Literal["destination"]
     type: str
@@ -28,11 +33,15 @@ class Step:
 
 @dataclass
 class Schedule:
+    """Task Schedule."""
+
     cron: str
 
 
 @dataclass
 class Task:
+    """Task."""
+
     id: int
     name: str
     schedules: list[Schedule]
@@ -42,6 +51,7 @@ class Task:
 
 
 def load_tasks() -> list[Task]:
+    """Load tasks from database."""
     connection = pymysql.connect(
         host=MYSQL_HOST,
         user=MYSQL_USER,
@@ -76,4 +86,5 @@ def load_tasks() -> list[Task]:
 
 @router.get("", response_model=list[Task])
 async def get_tasks():
+    """Get all tasks."""
     return load_tasks()
