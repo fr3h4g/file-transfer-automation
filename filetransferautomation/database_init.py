@@ -1,9 +1,11 @@
+"""Init database."""
 import pymysql.cursors
 
 from filetransferautomation.settings import MYSQL_HOST, MYSQL_PASS, MYSQL_USER
 
 
 def create_database():
+    """Create database and tables."""
     connection = pymysql.connect(
         host=MYSQL_HOST,
         user=MYSQL_USER,

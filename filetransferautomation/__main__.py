@@ -14,7 +14,8 @@ import uvicorn
 
 from filetransferautomation import hosts, schedules, steps, tasks
 from filetransferautomation.common import compare_filter
-from filetransferautomation.database_init import create_database
+
+# from filetransferautomation.database_init import create_database
 
 logging.basicConfig(level=logging.INFO, stream=sys.stderr)
 
@@ -88,6 +89,7 @@ def local_directory_transfer(
 
 
 def rename_process(task: tasks.Task, step: steps.Step, work_directory: str):
+    """Rename a file."""
     files_renamed = []
 
     if not step.filename:
@@ -180,7 +182,6 @@ def startup():
     tasks_data = tasks.load_tasks()
     logging.info(f"{len(tasks_data)} tasks loaded.")
     for task in tasks_data:
-        print(task)
         if task.active:
             for schedule in task.schedules:
                 scheduler.cron(str(schedule.cron)).do_function(run_task_threaded, task)

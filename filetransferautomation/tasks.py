@@ -1,19 +1,20 @@
-"""Tasks api."""
+"""Tasks api and data."""
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
-import json
-from typing import Literal
+from dataclasses import dataclass
+
+# import json
+# from typing import Literal
 
 from fastapi import APIRouter
 
-# import pymysql
-import pymysql.cursors
+# import pymysql.cursors
 
-from filetransferautomation import hosts
-from filetransferautomation.hosts import Host, get_host
+# from filetransferautomation import hosts
+# from filetransferautomation.hosts import Host, get_host
 from filetransferautomation.schedules import Schedule, get_schedules
-from filetransferautomation.settings import MYSQL_DB, MYSQL_HOST, MYSQL_PASS, MYSQL_USER
+
+# from filetransferautomation.settings import MYSQL_DB, MYSQL_HOST, MYSQL_PASS, MYSQL_USER
 from filetransferautomation.steps import Step, get_steps
 
 router = APIRouter()
@@ -35,9 +36,9 @@ class Task:
 
 
 def load_tasks() -> list[Task]:
+    """Load tasks from database."""
     global TASKS
 
-    """Load tasks from database."""
     TASKS = []
     TASKS.append(
         Task(
@@ -80,6 +81,7 @@ def load_tasks() -> list[Task]:
 
 
 def get_task(task_id: int) -> Task | None:
+    """Get a task."""
     for task in TASKS:
         if task.task_id == task_id:
             return task

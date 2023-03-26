@@ -1,3 +1,4 @@
+"""Steps data."""
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
@@ -28,6 +29,7 @@ STEPS: list[Step] = []
 
 
 def load_steps() -> list[Step]:
+    """Load steps from database."""
     global STEPS
     STEPS.append(
         Step(
@@ -61,6 +63,7 @@ def load_steps() -> list[Step]:
 
 
 def get_steps(task_id: int) -> list[Step]:
+    """Get all steps for a task."""
     return_data = []
     for step in STEPS:
         if step.task_id == task_id and step.step_type == "source":
