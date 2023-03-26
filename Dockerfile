@@ -11,4 +11,6 @@ COPY ./filetransferautomation /app/filetransferautomation
 
 RUN pip3.10 install .
 
+RUN mkdir work
+
 CMD [ "python" ,"-m", "filetransferautomation" ]

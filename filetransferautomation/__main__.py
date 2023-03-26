@@ -75,8 +75,8 @@ def run_task(task: tasks.Task):
     logging.info(
         f"Running task '{task.name}', id: {task.id}, task_id: {task_id}, thread {threading.get_native_id()}."
     )
-    task_directory = "./_work/" + task_id + "/"
-    os.makedirs(task_directory, exist_ok=True)
+    task_directory = "./work/" + task_id + "/"
+    os.mkdir(task_directory)
     for step in task.steps:
         if step.step_type == "source" and step.type == "local_directory":
             local_directory_transfer(step, task_directory)
@@ -86,7 +86,7 @@ def run_task(task: tasks.Task):
     for step in task.steps:
         if step.step_type == "destination" and step.type == "local_directory":
             local_directory_transfer(step, task_directory)
-    os.removedirs(task_directory)
+    os.rmdir(task_directory)
     logging.info(f"Task '{task.name}', id: {task.id}, task_id: {task_id} completed.")
     logging.info(
         f"Exiting task '{task.name}', id: {task.id}, task_id: {task_id}, thread {threading.get_native_id()}."
