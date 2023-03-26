@@ -1,0 +1,35 @@
+# Use root/example as user/password credentials
+version: "3.1"
+
+services:
+  db:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          '/usr/bin/mysql --user=root --password=root --execute "SHOW DATABASE;"',
+        ]
+      interval: 10s
+      timeout: 2s
+      retries: 10
+
+  app:
+    # image: ghcr.io/fr3h4g/file-transfer-automation:latest
+    build: .
+    depends_on:
+      - db
+    restart: always
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_USER=root
+      - MYSQL_PASS=password
+      - MYSQL_DB=file_transfer_automation
+    volumes:
+      - .:/app
+    ports:
+      - 8080:8080

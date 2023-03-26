@@ -11,9 +11,6 @@ __pycache__/
 .ruff_cache
 # C extensions
 *.so
-test-input
-test-output
-_work
 # Distribution / packaging
 .Python
 build/

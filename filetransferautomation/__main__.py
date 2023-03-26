@@ -14,6 +14,7 @@ import uvicorn
 
 from filetransferautomation import tasks
 from filetransferautomation.common import compare_filter
+from filetransferautomation.database import create_database
 
 logging.basicConfig(level=logging.INFO, stream=sys.stderr)
 
@@ -109,6 +110,8 @@ async def main() -> None:
 @app.on_event("startup")
 def startup():
     """Start File Transfer Automation."""
+    logging.info("Creating database.")
+    create_database()
     logging.info("Loading tasks.")
     tasks_data = tasks.load_tasks()
     for task in tasks_data:
