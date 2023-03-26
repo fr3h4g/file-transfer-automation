@@ -1,6 +1,6 @@
 import pymysql.cursors
 
-from filetransferautomation.settings import MYSQL_DB, MYSQL_HOST, MYSQL_PASS, MYSQL_USER
+from filetransferautomation.settings import MYSQL_HOST, MYSQL_PASS, MYSQL_USER
 
 
 def create_database():

@@ -30,6 +30,6 @@ services:
       - MYSQL_PASS=password
       - MYSQL_DB=file_transfer_automation
     volumes:
-      - .:/app
+      - ./:/app
     ports:
       - 8080:8080
