@@ -1,12 +1,18 @@
 name: Docker Image CI
 
-on:  
+on:
+  schedule:
+    - cron: "30 1 * * *"
   workflow_dispatch:
 
 jobs:
   Deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+      - name: Test with environment variables
       - name: Checkout Code
         uses: actions/checkout@v1
       - name: Login to GitHub Container Registry
@@ -20,4 +26,4 @@ jobs:
         with:
           push: true # Will only build if this is not here
           tags: |
-            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:nightly-${{ steps.date.outputs.date }}
