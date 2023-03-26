@@ -1,7 +1,7 @@
 """Tasks api."""
 from __future__ import annotations
 
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 import json
 from typing import Literal
 
@@ -9,10 +9,10 @@ from fastapi import APIRouter
 
 # import pymysql
 import pymysql.cursors
+
 from filetransferautomation import hosts
 from filetransferautomation.hosts import Host, get_host
 from filetransferautomation.schedules import Schedule, get_schedules
-
 from filetransferautomation.settings import MYSQL_DB, MYSQL_HOST, MYSQL_PASS, MYSQL_USER
 from filetransferautomation.steps import Step, get_steps
 
