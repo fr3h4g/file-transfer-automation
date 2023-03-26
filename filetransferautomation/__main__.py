@@ -150,5 +150,5 @@ def startup():
 
 if __name__ == "__main__":
     uvicorn.run(
-        "filetransferautomation.__main__:app", host="0.0.0.0", port=8000, reload=True
+        "filetransferautomation.__main__:app", host="0.0.0.0", port=8080, reload=True
     )

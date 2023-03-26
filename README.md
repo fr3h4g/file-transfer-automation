@@ -9,7 +9,7 @@ docker run --name some-file-transfer-automation \
 -e MYSQL_USER=username \
 -e MYSQL_PASS=password \
 -e MYSQL_DB=file_transfer_automation \
--d -p 8000:8000 ghcr.io/fr3h4g/file-transfer-automation:latest
+-d -p 8080:8080 ghcr.io/fr3h4g/file-transfer-automation:latest
 ```
 
 ## Environment Variables
