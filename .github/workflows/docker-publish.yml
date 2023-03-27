@@ -35,11 +35,13 @@ jobs:
             ghcr.io/${{ github.repository }}
           tags: |
             type=schedule,pattern=nightly
+            type=schedule,pattern=nightly-{{date 'YYYYMMDD'}}
             type=ref,event=branch
             type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
+            type=sha
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v4
         with:
