@@ -1,10 +1,11 @@
+"""Folders."""
 from __future__ import annotations
+
 from dataclasses import dataclass
 import os
 
 from fastapi import APIRouter, UploadFile
 from fastapi.responses import FileResponse
-
 
 router = APIRouter()
 
@@ -13,6 +14,8 @@ FOLDERS = []
 
 @dataclass
 class Folder:
+    """Folder dataclass."""
+
     folder_id: int
     name: str
 
@@ -26,11 +29,13 @@ def load_folders():
 
 @router.get("")
 def list_folders():
+    """List folders."""
     return FOLDERS
 
 
 @router.get("/{id}")
 def get_folder(id: int):
+    """Get a folder."""
     for folder in FOLDERS:
         if folder.folder_id == id:
             return folder
@@ -39,6 +44,7 @@ def get_folder(id: int):
 
 @router.get("/{id}/files")
 def get_files(id: int):
+    """List files in folder."""
     folder = get_folder(id)
     if not folder:
         return {"details": "folder not found."}
@@ -58,6 +64,7 @@ def get_files(id: int):
 
 @router.post("/{id}/uploadfiles")
 async def create_upload_files(id: int, files: list[UploadFile]):
+    """Upload files to a folder."""
     folder = get_folder(id)
     if not folder:
         return {"details": "folder not found."}
@@ -71,6 +78,7 @@ async def create_upload_files(id: int, files: list[UploadFile]):
 
 @router.get("/{id}/download/{filename}")
 async def download_file(id: int, filename: str):
+    """Download a file from folder."""
     folder = get_folder(id)
     if not folder:
         return {"error": "folder not found."}
