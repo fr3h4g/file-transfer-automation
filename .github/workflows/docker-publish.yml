@@ -2,13 +2,16 @@ name: Deploy Docker image
 
 on:
   schedule:
-    - cron: "30 1 * * *"
+    - cron: "0 30 * * *"
   workflow_dispatch:
   push:
     branches:
-      - "main"
+      - "**"
     tags:
       - "v*.*.*"
+  pull_request:
+    branches:
+      - "main"
 
 jobs:
   Deploy:
@@ -24,11 +27,22 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.TOKEN }}
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v2
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
         with:
-          push: true # Will only build if this is not here
+          images: |
+            ghcr.io/${{ github.repository }}
           tags: |
-            ghcr.io/${{ github.repository }}:nightly
-            ghcr.io/${{ github.repository }}:nightly-${{ env.date }}
-            ghcr.io/${{ github.repository }}:${{ github.ref }}
+            type=schedule,pattern=nightly
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
