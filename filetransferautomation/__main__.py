@@ -12,7 +12,7 @@ from fastapi import FastAPI
 from scheduleplus.scheduler import Scheduler
 import uvicorn
 
-from filetransferautomation import hosts, schedules, steps, tasks
+from filetransferautomation import folders, hosts, schedules, steps, tasks
 from filetransferautomation.common import compare_filter
 
 # from filetransferautomation.database_init import create_database
@@ -28,6 +28,12 @@ app.include_router(
     tasks.router,
     prefix="/api/v1/tasks",
     tags=["tasks"],
+)
+
+app.include_router(
+    folders.router,
+    prefix="/api/v1/folders",
+    tags=["folders"],
 )
 
 
@@ -177,6 +183,10 @@ def startup():
     logging.info("Loading steps.")
     steps_data = steps.load_steps()
     logging.info(f"{len(steps_data)} steps loaded.")
+
+    logging.info("Loading folders.")
+    folders_data = folders.load_folders()
+    logging.info(f"{len(folders_data)} folders loaded.")
 
     logging.info("Loading tasks.")
     tasks_data = tasks.load_tasks()

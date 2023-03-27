@@ -11,8 +11,9 @@ dependencies = [
     "fastapi==0.95.0",
     "uvicorn==0.21.1",
     "PyMySQL==1.0.2",
-    "python_dotenv==1.0.0",
+    "python-dotenv==1.0.0",
     "scheduleplus",
+    "python-multipart",
 ]
 
 [project.optional-dependencies]
