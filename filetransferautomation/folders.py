@@ -7,6 +7,8 @@ import os
 from fastapi import APIRouter, UploadFile
 from fastapi.responses import FileResponse
 
+from filetransferautomation import settings
+
 router = APIRouter()
 
 FOLDERS = []
@@ -24,6 +26,12 @@ def load_folders():
     """Load folders from database."""
     global FOLDERS
     FOLDERS.append(Folder(folder_id=1, name="test"))
+
+    for folder in FOLDERS:
+        path = os.path.join(settings.DATA_DIR, folder.name)
+        if not os.path.exists(path):
+            os.mkdir(path)
+
     return FOLDERS
 
 
@@ -34,7 +42,7 @@ def list_folders():
 
 
 @router.get("/{id}")
-def get_folder(id: int):
+def get_folder(id: int) -> Folder | None:
     """Get a folder."""
     for folder in FOLDERS:
         if folder.folder_id == id:
@@ -48,7 +56,7 @@ def get_files(id: int):
     folder = get_folder(id)
     if not folder:
         return {"details": "folder not found."}
-    files = os.listdir("./data/" + folder.name)
+    files = os.listdir(os.path.join(settings.DATA_DIR, folder.name))
     return files
 
 
@@ -70,8 +78,11 @@ async def create_upload_files(id: int, files: list[UploadFile]):
         return {"details": "folder not found."}
 
     for file in files:
-        with open("./data/" + folder.name + "/" + file.filename, "wb") as new_file:
-            new_file.write(file.file.read())
+        if file.filename:
+            with open(
+                os.path.join(settings.DATA_DIR, folder.name, file.filename), "wb"
+            ) as new_file:
+                new_file.write(file.file.read())
 
     return {"filenames": [file.filename for file in files]}
 
@@ -83,7 +94,7 @@ async def download_file(id: int, filename: str):
     if not folder:
         return {"error": "folder not found."}
     return FileResponse(
-        path="./data/" + folder.name + "/" + filename,
+        path=os.path.join(settings.DATA_DIR, folder.name, filename),
         filename=filename,
         media_type="application/octet-stream",
     )

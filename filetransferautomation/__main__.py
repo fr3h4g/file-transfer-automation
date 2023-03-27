@@ -12,7 +12,7 @@ from fastapi import FastAPI
 from scheduleplus.scheduler import Scheduler
 import uvicorn
 
-from filetransferautomation import folders, hosts, schedules, steps, tasks
+from filetransferautomation import folders, hosts, schedules, settings, steps, tasks
 from filetransferautomation.common import compare_filter
 
 # from filetransferautomation.database_init import create_database
@@ -124,7 +124,7 @@ def run_task(task: tasks.Task):
     logging.info(
         f"--- Running task '{task.name}', id: {task.task_id}, task_id: {task_id}, thread {threading.get_native_id()}."
     )
-    work_directory = "./work/" + task_id + "/"
+    work_directory = os.path.join(settings.WORK_DIR, task_id)
     os.mkdir(work_directory)
     found_files = []
     for step in task.steps:
