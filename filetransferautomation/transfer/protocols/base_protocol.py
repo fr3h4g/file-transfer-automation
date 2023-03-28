@@ -34,7 +34,8 @@ class BaseProtocol:
 
         if self._direction == "download":
             logging.info(
-                f"Listing files in directory '{self._from_directory}' on '{self._task.name}' to download."
+                f"Listing files in directory '{self._from_directory}' on "
+                f"'{self._task.name}' to download."
             )
         else:
             logging.info(
