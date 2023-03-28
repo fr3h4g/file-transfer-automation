@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from filetransferautomation.models import Host
 
-
 HOSTS: list[Host] = []
 
 

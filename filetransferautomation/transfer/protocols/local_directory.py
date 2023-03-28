@@ -1,9 +1,10 @@
 """Local directory protocol."""
 from __future__ import annotations
+
 import os
 
 from filetransferautomation.models import File
-import copy
+
 from .base_protocol import BaseProtocol
 
 
@@ -20,7 +21,6 @@ class LocalDirectory(BaseProtocol):
         return True
 
     def _list_files(self) -> list[File]:
-        out_files = []
         out_files = [File(file) for file in os.listdir(self._from_directory)]
         return out_files
 
@@ -29,14 +29,12 @@ class LocalDirectory(BaseProtocol):
         if not self._from_directory or not self._to_directory:
             return out_files
         for filename in in_files:
-            from_filename = filename
-            to_filename = copy.deepcopy(filename)
-            to_filename.name = to_filename.name + ".processing"
             os.rename(
-                os.path.join(self._from_directory, from_filename.name),
-                os.path.join(self._from_directory, to_filename.name),
+                os.path.join(self._from_directory, filename.name),
+                os.path.join(self._from_directory, filename.name + ".processing"),
             )
-            out_files.append(to_filename)
+            filename.name = filename.name + ".processing"
+            out_files.append(filename)
         return out_files
 
     def _download_files(self, in_files: list[File]) -> list[File]:
@@ -44,22 +42,17 @@ class LocalDirectory(BaseProtocol):
         if not self._from_directory or not self._to_directory:
             return out_files
         for filename in in_files:
-            from_filename = filename
-            to_filename = copy.deepcopy(filename)
-            to_filename.name = to_filename.name[:-11]
-
             with open(
-                os.path.join(self._from_directory, from_filename.name), "rb"
-            ) as file_bytes:
-                file_data = file_bytes.read()
+                os.path.join(self._from_directory, filename.name), "rb"
+            ) as from_file:
+                file_data = from_file.read()
             with open(
-                os.path.join(self._to_directory, to_filename.name), "wb"
-            ) as f_byte:
-                f_byte.write(file_data)
-
-            os.remove(os.path.join(self._from_directory, from_filename.name))
-
-            out_files.append(to_filename)
+                os.path.join(self._to_directory, filename.name[:-11]), "wb"
+            ) as to_file:
+                to_file.write(file_data)
+            os.remove(os.path.join(self._from_directory, filename.name))
+            filename.name = filename.name[:-11]
+            out_files.append(filename)
         return out_files
 
     def _upload_files(self, in_files: list[File]) -> list[File]:

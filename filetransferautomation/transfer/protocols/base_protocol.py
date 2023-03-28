@@ -1,7 +1,7 @@
 """Base protocol."""
 from __future__ import annotations
-import logging
 
+import logging
 from typing import Literal
 
 from filetransferautomation import steps, tasks
@@ -45,7 +45,7 @@ class BaseProtocol:
                 f"Listing files in work directory '{self._from_directory}' for upload."
             )
         get_files_out = []
-        get_files_out = self._get_files()
+        get_files_out = self._list_files()
         total_files = len(get_files_out)
 
         compare_files_in = get_files_out
@@ -105,7 +105,7 @@ class BaseProtocol:
     def _connect(self) -> bool:
         return True
 
-    def _get_files(self) -> list[File]:
+    def _list_files(self) -> list[File]:
         return []
 
     def _compare_files(self, in_files: list[File]) -> list[File]:

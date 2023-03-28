@@ -6,7 +6,6 @@ from dataclasses import asdict
 from filetransferautomation.hosts import get_host
 from filetransferautomation.models import Step
 
-
 STEPS: list[Step] = []
 
 

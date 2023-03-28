@@ -3,13 +3,14 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
+from filetransferautomation.models import Task
+
 # from filetransferautomation import hosts
 # from filetransferautomation.hosts import Host, get_host
 from filetransferautomation.schedules import get_schedules
 
 # from filetransferautomation.settings import MYSQL_DB, MYSQL_HOST, MYSQL_PASS, MYSQL_USER
 from filetransferautomation.steps import get_steps
-from filetransferautomation.models import Task
 
 # import json
 # from typing import Literal
