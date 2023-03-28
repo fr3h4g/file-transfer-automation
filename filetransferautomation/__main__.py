@@ -14,6 +14,7 @@ import uvicorn
 
 from filetransferautomation import folders, hosts, schedules, settings, steps, tasks
 from filetransferautomation.common import compare_filter
+from filetransferautomation.transfer import Transfer
 
 # from filetransferautomation.database_init import create_database
 
@@ -35,63 +36,6 @@ app.include_router(
     prefix="/api/v1/folders",
     tags=["folders"],
 )
-
-
-def local_directory_transfer(
-    task: tasks.Task, step: tasks.Step, work_directory: str
-) -> list:
-    """Get and Send files from and to local directory in a task."""
-    files_found = []
-    if not step.directory:
-        logging.error("Local directory is not set.")
-        return files_found
-    if not step.file_mask:
-        logging.error("No file_mask set, use *.* for all files.")
-        return files_found
-
-    if step.step_type == "source":
-        from_dir = step.directory
-        to_dir = work_directory
-        direction = "download"
-    else:
-        from_dir = work_directory
-        to_dir = step.directory
-        direction = "upload"
-
-    temp_ext = f".{direction}"
-
-    logging.info(f"Checking for files '{step.file_mask}' in directory '{from_dir}'.")
-
-    files = os.listdir(from_dir)
-
-    for filename in files:
-        if compare_filter(filename, step.file_mask):
-            files_found.append(filename)
-
-    logging.info(f"{len(files_found)} files matched of {len(files)} files found.")
-
-    files_sent = []
-    for filename in files_found:
-        os.rename(
-            os.path.join(from_dir, filename),
-            os.path.join(from_dir, filename) + temp_ext,
-        )
-        with open(os.path.join(from_dir, filename) + temp_ext, "rb") as file_bytes:
-            file_data = file_bytes.read()
-
-        with open(os.path.join(to_dir, filename), "wb") as f_byte:
-            f_byte.write(file_data)
-
-        os.remove(os.path.join(from_dir, filename) + temp_ext)
-
-        files_sent.append(filename)
-
-    if direction == "download":
-        logging.info(f"{len(files_sent)} files downloaded from {from_dir}.")
-    else:
-        logging.info(f"{len(files_sent)} files uploaded to {to_dir}.")
-
-    return files_found
 
 
 def rename_process(task: tasks.Task, step: steps.Step, work_directory: str):
@@ -126,11 +70,13 @@ def run_task(task: tasks.Task):
     )
     work_directory = os.path.join(settings.WORK_DIR, task_id)
     os.mkdir(work_directory)
-    found_files = []
+    downloaded_files = []
     for step in task.steps:
-        if step.step_type == "source" and step.type == "local_directory":
-            found_files = local_directory_transfer(task, step, work_directory)
-    if found_files:
+        if step.step_type == "source" and step.type:
+            # found_files = local_directory_transfer(task, step, work_directory)
+            transfer = Transfer(step.type, "download", task, step, work_directory)
+            downloaded_files = transfer.run()
+    if downloaded_files:
         for step in task.steps:
             if step.step_type == "process":
                 if step.type == "rename":
@@ -138,11 +84,9 @@ def run_task(task: tasks.Task):
                 elif step.type == "script":
                     pass
         for step in task.steps:
-            if step.step_type == "destination" and step.type == "local_directory":
-                local_directory_transfer(task, step, work_directory)
-    else:
-        logging.info(f"Found no files on '{task.name}'.")
-        logging.info("No files were retrieved.")
+            if step.step_type == "destination" and step.type:
+                transfer = Transfer(step.type, "upload", task, step, work_directory)
+                transfer.run()
     os.rmdir(work_directory)
     logging.info(
         f"Task '{task.name}', id: {task.task_id}, task_id: {task_id} completed."
