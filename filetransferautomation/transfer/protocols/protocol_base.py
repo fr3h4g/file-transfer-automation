@@ -10,7 +10,7 @@ from filetransferautomation.common import compare_filter
 from filetransferautomation.models import File
 
 
-class BaseProtocol:
+class ProtocolBase:
     """Base class for protocol implementation."""
 
     def __init__(

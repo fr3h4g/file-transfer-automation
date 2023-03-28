@@ -5,10 +5,10 @@ import os
 
 from filetransferautomation.models import File
 
-from .base_protocol import BaseProtocol
+from .protocol_base import ProtocolBase
 
 
-class LocalDirectory(BaseProtocol):
+class LocalDirectory(ProtocolBase):
     """Local directory protocol."""
 
     def _connect(self) -> bool:
