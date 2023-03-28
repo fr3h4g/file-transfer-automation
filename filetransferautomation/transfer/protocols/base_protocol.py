@@ -95,7 +95,7 @@ class BaseProtocol:
 
                 done_files = upload_files_out
         else:
-            logging.info(f"No files found to transfer.")
+            logging.info("No files found to transfer.")
 
         self._disconnect()
         logging.info(f"Disconnected from '{self._task.name}'.")
