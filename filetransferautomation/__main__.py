@@ -18,7 +18,11 @@ from filetransferautomation.transfer import Transfer
 
 # from filetransferautomation.database_init import create_database
 
-logging.basicConfig(level=logging.INFO, stream=sys.stderr)
+if not settings.DEV_MODE:
+    logging.basicConfig(level=logging.INFO, stream=sys.stderr)
+if settings.DEV_MODE:
+    logging.basicConfig(level=logging.DEBUG, stream=sys.stderr)
+
 
 app = FastAPI()
 
@@ -138,8 +142,12 @@ def startup():
     for task in tasks_data:
         if task.active:
             for schedule in task.schedules:
-                scheduler.cron(str(schedule.cron)).do_function(run_task_threaded, task)
-                run_task_threaded(task)
+                if not settings.DEV_MODE:
+                    scheduler.cron(str(schedule.cron)).do_function(
+                        run_task_threaded, task
+                    )
+                if settings.DEV_MODE:
+                    run_task_threaded(task)
 
     asyncio.ensure_future(main())
 
