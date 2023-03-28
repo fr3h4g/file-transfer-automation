@@ -30,7 +30,10 @@ class BaseProtocol:
     def run(self) -> list[str]:
         """Run base class."""
         logging.info(f"Connecting to '{self._task.name}'.")
-        self._connect()
+        connected = self._connect()
+        if not connected:
+            logging.error(f"Can't connect to '{self._task.name}'.")
+            return []
 
         if self._direction == "download":
             logging.info(
@@ -97,8 +100,8 @@ class BaseProtocol:
 
         return done_files
 
-    def _connect(self):
-        pass
+    def _connect(self) -> bool:
+        return True
 
     def _get_files(self) -> list[str]:
         return []

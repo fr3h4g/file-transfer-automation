@@ -8,13 +8,14 @@ from .base_protocol import BaseProtocol
 class LocalDirectory(BaseProtocol):
     """Local directory protocol."""
 
-    def _connect(self):
+    def _connect(self) -> bool:
         if self._direction == "download":
             self._from_directory = self._step.directory
             self._to_directory = self._work_directory
         if self._direction == "upload":
             self._from_directory = self._work_directory
             self._to_directory = self._step.directory
+        return True
 
     def _get_files(self) -> list[str]:
         out_files = []
