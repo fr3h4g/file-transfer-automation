@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from typing import Literal
 
 from filetransferautomation import steps, tasks
@@ -62,38 +63,48 @@ class BaseProtocol:
 
                 renamed_files_in = compare_files_out
                 rename_files_out = []
-                rename_files_out = self._rename_files(renamed_files_in)
+                rename_files_out = self._rename_remote_files(renamed_files_in)
                 renamed_files = len(rename_files_out)
 
                 download_files_in = rename_files_out
                 download_files_out = []
                 logging.info(f"Downloading {renamed_files} files.")
-                download_files_out = self._download_files(download_files_in)
+                download_files_out = self.__download_files(download_files_in)
                 downloaded_files = len(download_files_out)
                 logging.info(
                     f"Downloaded {downloaded_files} files from '{self._from_directory}'."
                 )
 
-                done_files = download_files_out
+                renamed_files_in = download_files_out
+                rename_files_out = []
+                rename_files_out = self._rename_work_files(renamed_files_in)
+                renamed_files = len(rename_files_out)
+
+                done_files = rename_files_out
 
             else:
                 self._from_directory = self._work_directory
 
                 renamed_files_in = compare_files_out
                 rename_files_out = []
-                rename_files_out = self._rename_files(renamed_files_in)
+                rename_files_out = self._rename_work_files(renamed_files_in)
                 renamed_files = len(rename_files_out)
 
                 upload_files_in = rename_files_out
                 upload_files_out = []
                 logging.info(f"Uploading {renamed_files} files.")
-                upload_files_out = self._upload_files(upload_files_in)
+                upload_files_out = self.__upload_files(upload_files_in)
                 uploaded_files = len(upload_files_out)
                 logging.info(
                     f"Uploaded {uploaded_files} files to '{self._to_directory}'."
                 )
 
-                done_files = upload_files_out
+                renamed_files_in = upload_files_out
+                rename_files_out = []
+                rename_files_out = self._rename_remote_files(renamed_files_in)
+                renamed_files = len(rename_files_out)
+
+                done_files = rename_files_out
         else:
             logging.info("No files found to transfer.")
 
@@ -115,20 +126,60 @@ class BaseProtocol:
                 out_files.append(filename)
         return out_files
 
-    def _rename_files(self, in_files: list[File]) -> list[File]:
+    def _rename_remote_files(self, in_files: list[File]) -> list[File]:
         out_files = []
-        out_files = in_files
+        for file in in_files:
+            file = self._rename_remote_file(file)
+            if file:
+                out_files.append(file)
         return out_files
 
-    def _download_files(self, in_files: list[File]) -> list[File]:
+    def _rename_remote_file(self, file: File) -> File:
+        return file
+
+    def _rename_work_files(self, in_files: list[File]) -> list[File]:
         out_files = []
-        out_files = in_files
+        for file in in_files:
+            file = self._rename_work_file(file)
+            if file:
+                out_files.append(file)
         return out_files
 
-    def _upload_files(self, in_files: list[File]) -> list[File]:
+    def _rename_work_file(self, file: File) -> File:
+        if self._direction == "download":
+            os.rename(
+                os.path.join(self._to_directory, file.name + ".processing"),
+                os.path.join(self._to_directory, file.name),
+            )
+        else:
+            os.rename(
+                os.path.join(self._from_directory, file.name),
+                os.path.join(self._from_directory, file.name + ".processing"),
+            )
+        file.name = file.name
+        return file
+
+    def __download_files(self, in_files: list[File]) -> list[File]:
         out_files = []
-        out_files = in_files
+        for file in in_files:
+            file = self._download_file(file)
+            if file:
+                out_files.append(file)
         return out_files
+
+    def _download_file(self, file: File) -> File | None:
+        return file
+
+    def __upload_files(self, in_files: list[File]) -> list[File]:
+        out_files = []
+        for file in in_files:
+            file = self._upload_file(file)
+            if file:
+                out_files.append(file)
+        return out_files
+
+    def _upload_file(self, file: File) -> File | None:
+        return file
 
     def _disconnect(self):
         pass

@@ -24,39 +24,42 @@ class LocalDirectory(BaseProtocol):
         out_files = [File(file) for file in os.listdir(self._from_directory)]
         return out_files
 
-    def _rename_files(self, in_files: list[File]) -> list[File]:
-        out_files = []
-        if not self._from_directory or not self._to_directory:
-            return out_files
-        for filename in in_files:
+    def _rename_remote_file(self, file: File) -> File:
+        if self._direction == "download":
             os.rename(
-                os.path.join(self._from_directory, filename.name),
-                os.path.join(self._from_directory, filename.name + ".processing"),
+                os.path.join(self._from_directory, file.name),
+                os.path.join(self._from_directory, file.name + ".processing"),
             )
-            filename.name = filename.name + ".processing"
-            out_files.append(filename)
-        return out_files
+        else:
+            os.rename(
+                os.path.join(self._to_directory, file.name + ".processing"),
+                os.path.join(self._to_directory, file.name),
+            )
+        return file
 
-    def _download_files(self, in_files: list[File]) -> list[File]:
-        out_files = []
-        if not self._from_directory or not self._to_directory:
-            return out_files
-        for filename in in_files:
-            with open(
-                os.path.join(self._from_directory, filename.name), "rb"
-            ) as from_file:
-                file_data = from_file.read()
-            with open(
-                os.path.join(self._to_directory, filename.name[:-11]), "wb"
-            ) as to_file:
-                to_file.write(file_data)
-            os.remove(os.path.join(self._from_directory, filename.name))
-            filename.name = filename.name[:-11]
-            out_files.append(filename)
-        return out_files
+    def _download_file(self, file: File) -> File | None:
+        with open(
+            os.path.join(self._from_directory, file.name + ".processing"), "rb"
+        ) as from_file:
+            file_data = from_file.read()
+        with open(
+            os.path.join(self._to_directory, file.name + ".processing"), "wb"
+        ) as to_file:
+            to_file.write(file_data)
+        os.remove(os.path.join(self._from_directory, file.name + ".processing"))
+        return file
 
-    def _upload_files(self, in_files: list[File]) -> list[File]:
-        return self._download_files(in_files)
+    def _upload_file(self, file: File) -> File | None:
+        with open(
+            os.path.join(self._from_directory, file.name + ".processing"), "rb"
+        ) as from_file:
+            file_data = from_file.read()
+        with open(
+            os.path.join(self._to_directory, file.name + ".processing"), "wb"
+        ) as to_file:
+            to_file.write(file_data)
+        os.remove(os.path.join(self._from_directory, file.name + ".processing"))
+        return file
 
     def _disconnect(self):
         pass
