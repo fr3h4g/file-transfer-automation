@@ -23,6 +23,7 @@ class Step:
     password: str | None = None
     share: str | None = None
     run_per_file: bool | None = None
+    name: str | None = None
 
 
 STEPS: list[Step] = []

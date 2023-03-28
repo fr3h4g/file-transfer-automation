@@ -29,20 +29,19 @@ class BaseProtocol:
 
     def run(self) -> list[str]:
         """Run base class."""
-        logging.info(f"Connecting to '{self._task.name}'.")
+        logging.info(f"Connecting to '{self._step.name}'.")
         connected = self._connect()
         if not connected:
-            logging.error(f"Can't connect to '{self._task.name}'.")
+            logging.error(f"Can't connect to '{self._step.name}'.")
             return []
 
         if self._direction == "download":
             logging.info(
-                f"Listing files in directory '{self._from_directory}' on "
-                f"'{self._task.name}' to download."
+                f"Listing files in directory '{self._from_directory}' to download."
             )
         else:
             logging.info(
-                f"Listing files in work directory for upload to '{self._task.name}'."
+                f"Listing files in work directory '{self._from_directory}' for upload."
             )
         get_files_out = []
         get_files_out = self._get_files()
@@ -98,7 +97,7 @@ class BaseProtocol:
             logging.info("No files found to transfer.")
 
         self._disconnect()
-        logging.info(f"Disconnected from '{self._task.name}'.")
+        logging.info(f"Disconnected from '{self._step.name}'.")
 
         return done_files
 
