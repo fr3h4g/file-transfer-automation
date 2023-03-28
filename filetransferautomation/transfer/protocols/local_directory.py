@@ -20,10 +20,18 @@ class LocalDirectory(BaseProtocol):
         return out_files
 
     def _delete_file(self, file: File) -> bool:
+        if not self._remote_directory:
+            raise ValueError("_remote_directory is not set.")
         os.remove(os.path.join(self._remote_directory, file.name))
         return True
 
     def _rename_file(self, file: File) -> File:
+        if not self._remote_directory:
+            raise ValueError("_remote_directory is not set.")
+        if not self._rename_from:
+            raise ValueError("_rename_from is not set.")
+        if not self._rename_to:
+            raise ValueError("_rename_to is not set.")
         os.rename(
             os.path.join(self._remote_directory, self._rename_from),
             os.path.join(self._remote_directory, self._rename_to),
@@ -31,6 +39,8 @@ class LocalDirectory(BaseProtocol):
         return file
 
     def _download_file(self, file: File) -> File | None:
+        if not self._remote_directory:
+            raise ValueError("_remote_directory is not set.")
         with open(os.path.join(self._remote_directory, file.name), "rb") as from_file:
             file_data = from_file.read()
         with open(os.path.join(self._work_directory, file.name), "wb") as to_file:
@@ -38,6 +48,8 @@ class LocalDirectory(BaseProtocol):
         return file
 
     def _upload_file(self, file: File) -> File | None:
+        if not self._remote_directory:
+            raise ValueError("_remote_directory is not set.")
         with open(os.path.join(self._work_directory, file.name), "rb") as from_file:
             file_data = from_file.read()
         with open(os.path.join(self._remote_directory, file.name), "wb") as to_file:

@@ -172,6 +172,12 @@ class BaseProtocol:
         return out_files
 
     def _rename_work_file(self, file: File) -> File:
+        if not self._work_directory:
+            raise ValueError("_work_directory is not set.")
+        if not self._rename_from:
+            raise ValueError("_rename_from is not set.")
+        if not self._rename_to:
+            raise ValueError("_rename_to is not set.")
         os.rename(
             os.path.join(self._work_directory, self._rename_from),
             os.path.join(self._work_directory, self._rename_to),
