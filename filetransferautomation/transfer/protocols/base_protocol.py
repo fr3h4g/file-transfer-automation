@@ -1,3 +1,4 @@
+"""Base protocol."""
 from __future__ import annotations
 import logging
 
@@ -8,6 +9,8 @@ from filetransferautomation.common import compare_filter
 
 
 class BaseProtocol:
+    """Base class for protocol implementation."""
+
     def __init__(
         self,
         direction: Literal["download"] | Literal["upload"],
@@ -15,6 +18,7 @@ class BaseProtocol:
         step: steps.Step,
         work_directory: str,
     ):
+        """Init protocol base class."""
         self._direction = direction
         self._task = task
         self._step = step
@@ -24,6 +28,7 @@ class BaseProtocol:
         self._to_directory = None
 
     def run(self) -> list[str]:
+        """Run base class."""
         logging.info(f"Connecting to '{self._task.name}'.")
         self._connect()
 

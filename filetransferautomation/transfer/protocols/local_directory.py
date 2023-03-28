@@ -1,13 +1,13 @@
+"""Local directory protocol."""
 from __future__ import annotations
 import os
 
-from typing import Literal
-
-from filetransferautomation import steps, tasks
 from .base_protocol import BaseProtocol
 
 
 class LocalDirectory(BaseProtocol):
+    """Local directory protocol."""
+
     def _connect(self):
         if self._direction == "download":
             self._from_directory = self._step.directory
