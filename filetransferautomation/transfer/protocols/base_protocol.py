@@ -34,7 +34,7 @@ class BaseProtocol:
     def run(self) -> list[File]:
         """Run base class."""
         logging.info(f"Connecting to '{self._step.name}'.")
-        connected = self._connect_to_remote()
+        connected = self._connect()
         if not connected:
             logging.error(f"Can't connect to '{self._step.name}'.")
             return []
@@ -44,7 +44,7 @@ class BaseProtocol:
             logging.info(
                 f"Listing files in directory '{self._remote_directory}' to download."
             )
-            get_files_out = self._list_remote_files()
+            get_files_out = self._list_files()
             total_files = len(get_files_out)
         else:
             logging.info(
@@ -113,10 +113,10 @@ class BaseProtocol:
 
         return done_files
 
-    def _connect_to_remote(self) -> bool:
+    def _connect(self) -> bool:
         return True
 
-    def _list_remote_files(self) -> list[File]:
+    def _list_files(self) -> list[File]:
         return []
 
     def _list_work_files(self) -> list[File]:
@@ -137,35 +137,37 @@ class BaseProtocol:
                 self._rename_from = file.name
                 self._rename_to = file.name + ".processing"
             else:
-                self._rename_from = file.name + ".processing"
-                self._rename_to = file.name
-            file = self._rename_remote_file(file)
+                self._rename_from = file.name
+                self._rename_to = file.name[:-11]
+            file = self._rename_file(file)
             if file:
+                file.name = self._rename_to
                 out_files.append(file)
                 logging.debug(f"Remote file renamed {file}")
         return out_files
 
-    def _delete_remote_file(self, file: File) -> bool:
+    def _delete_file(self, file: File) -> bool:
         return True
 
     def _delete_work_file(self, file: File) -> bool:
-        os.remove(os.path.join(self._work_directory, file.name + ".processing"))
+        os.remove(os.path.join(self._work_directory, file.name))
         return True
 
-    def _rename_remote_file(self, file: File) -> File:
+    def _rename_file(self, file: File) -> File:
         return file
 
     def _rename_work_files(self, in_files: list[File]) -> list[File]:
         out_files = []
         for file in in_files:
             if self._direction == "download":
-                self._rename_from = file.name + ".processing"
-                self._rename_to = file.name
+                self._rename_from = file.name
+                self._rename_to = file.name[:-11]
             else:
                 self._rename_from = file.name
                 self._rename_to = file.name + ".processing"
             file = self._rename_work_file(file)
             if file:
+                file.name = self._rename_to
                 out_files.append(file)
         return out_files
 
@@ -180,21 +182,21 @@ class BaseProtocol:
     def __download_files(self, in_files: list[File]) -> list[File]:
         out_files = []
         for file in in_files:
-            file = self._download_remote_file(file)
+            file = self._download_file(file)
             logging.debug(f"File downloaded {file}.")
             if file:
                 out_files.append(file)
-                self._delete_remote_file(file)
+                self._delete_file(file)
                 logging.debug(f"Remote file deleted {file}.")
         return out_files
 
-    def _download_remote_file(self, file: File) -> File | None:
+    def _download_file(self, file: File) -> File | None:
         return file
 
     def __upload_files(self, in_files: list[File]) -> list[File]:
         out_files = []
         for file in in_files:
-            file = self._upload_remote_file(file)
+            file = self._upload_file(file)
             logging.debug(f"File uploaded {file}.")
             if file:
                 out_files.append(file)
@@ -202,7 +204,7 @@ class BaseProtocol:
                 logging.debug(f"Work file deleted {file}.")
         return out_files
 
-    def _upload_remote_file(self, file: File) -> File | None:
+    def _upload_file(self, file: File) -> File | None:
         return file
 
     def _disconnect_from_remote(self):
