@@ -19,13 +19,15 @@ class LocalDirectory(BaseProtocol):
             self._to_directory = self._step.directory
         return True
 
-    def _get_files(self) -> list[File]:
+    def _list_files(self) -> list[File]:
         out_files = []
         out_files = [File(file) for file in os.listdir(self._from_directory)]
         return out_files
 
     def _rename_files(self, in_files: list[File]) -> list[File]:
         out_files = []
+        if not self._from_directory or not self._to_directory:
+            return out_files
         for filename in in_files:
             from_filename = filename
             to_filename = copy.deepcopy(filename)
@@ -39,6 +41,8 @@ class LocalDirectory(BaseProtocol):
 
     def _download_files(self, in_files: list[File]) -> list[File]:
         out_files = []
+        if not self._from_directory or not self._to_directory:
+            return out_files
         for filename in in_files:
             from_filename = filename
             to_filename = copy.deepcopy(filename)

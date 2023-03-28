@@ -2,8 +2,12 @@
 import re
 
 
-def compare_filter(value: str, filter_value: str) -> bool:
+def compare_filter(value: str | None, filter_value: str | None) -> bool:
     """Filter for filename in tasks."""
+    if not value:
+        value = ""
+    if not filter_value:
+        filter_value = ""
     value = value.strip()
     filter_value_regex = filter_value.strip()
     filter_value_regex = "^" + filter_value_regex + "$"

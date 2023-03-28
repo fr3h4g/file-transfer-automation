@@ -15,7 +15,7 @@ class Transfer:
 
     def __init__(
         self,
-        transfer_type: Literal["local_directory"],
+        transfer_type: str,
         direction: Literal["download"] | Literal["upload"],
         task: tasks.Task,
         step: steps.Step,

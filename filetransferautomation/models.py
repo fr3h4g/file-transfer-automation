@@ -26,7 +26,9 @@ class Step:
     step_type: Literal["source"] | Literal["process"] | Literal["destination"]
     host_id: int | None = None
     directory: str | None = None
-    type: str | None = None
+    type: Literal["local_directory"] | Literal["rename"] | Literal[
+        "unc_share"
+    ] | None = None
     file_mask: str | None = None
     filename: str | None = None
     username: str | None = None
