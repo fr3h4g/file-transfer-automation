@@ -1,29 +1,10 @@
 """Steps data."""
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
-from typing import Literal
+from dataclasses import asdict
 
 from filetransferautomation.hosts import get_host
-
-
-@dataclass
-class Step:
-    """Task Step."""
-
-    step_id: int
-    task_id: int
-    step_type: Literal["source"] | Literal["process"] | Literal["destination"]
-    host_id: int | None = None
-    directory: str | None = None
-    type: str | None = None
-    file_mask: str | None = None
-    filename: str | None = None
-    username: str | None = None
-    password: str | None = None
-    share: str | None = None
-    run_per_file: bool | None = None
-    name: str | None = None
+from filetransferautomation.models import Step
 
 
 STEPS: list[Step] = []

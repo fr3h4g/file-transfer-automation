@@ -6,6 +6,7 @@ from typing import Literal
 
 from filetransferautomation import steps, tasks
 from filetransferautomation.common import compare_filter
+from filetransferautomation.models import File
 
 
 class BaseProtocol:
@@ -27,7 +28,7 @@ class BaseProtocol:
         self._from_directory = None
         self._to_directory = None
 
-    def run(self) -> list[str]:
+    def run(self) -> list[File]:
         """Run base class."""
         logging.info(f"Connecting to '{self._step.name}'.")
         connected = self._connect()
@@ -104,27 +105,27 @@ class BaseProtocol:
     def _connect(self) -> bool:
         return True
 
-    def _get_files(self) -> list[str]:
+    def _get_files(self) -> list[File]:
         return []
 
-    def _compare_files(self, in_files: list[str]) -> list[str]:
+    def _compare_files(self, in_files: list[File]) -> list[File]:
         out_files = []
         for filename in in_files:
-            if compare_filter(filename, self._step.file_mask):
+            if compare_filter(filename.name, self._step.file_mask):
                 out_files.append(filename)
         return out_files
 
-    def _rename_files(self, in_files: list[str]) -> list[str]:
+    def _rename_files(self, in_files: list[File]) -> list[File]:
         out_files = []
         out_files = in_files
         return out_files
 
-    def _download_files(self, in_files: list[str]) -> list[str]:
+    def _download_files(self, in_files: list[File]) -> list[File]:
         out_files = []
         out_files = in_files
         return out_files
 
-    def _upload_files(self, in_files: list[str]) -> list[str]:
+    def _upload_files(self, in_files: list[File]) -> list[File]:
         out_files = []
         out_files = in_files
         return out_files

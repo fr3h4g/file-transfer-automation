@@ -1,16 +1,7 @@
 """Schedules data."""
 from __future__ import annotations
 
-from dataclasses import dataclass
-
-
-@dataclass
-class Schedule:
-    """Schedule dataclass."""
-
-    schedule_id: int
-    task_id: int
-    cron: str
+from filetransferautomation.models import Schedule
 
 
 SCHEDULES: list[Schedule] = []

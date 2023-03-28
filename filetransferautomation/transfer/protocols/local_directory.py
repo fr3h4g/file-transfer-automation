@@ -2,6 +2,8 @@
 from __future__ import annotations
 import os
 
+from filetransferautomation.models import File
+import copy
 from .base_protocol import BaseProtocol
 
 
@@ -17,42 +19,46 @@ class LocalDirectory(BaseProtocol):
             self._to_directory = self._step.directory
         return True
 
-    def _get_files(self) -> list[str]:
+    def _get_files(self) -> list[File]:
         out_files = []
-        out_files = os.listdir(self._from_directory)
+        out_files = [File(file) for file in os.listdir(self._from_directory)]
         return out_files
 
-    def _rename_files(self, in_files: list[str]) -> list[str]:
+    def _rename_files(self, in_files: list[File]) -> list[File]:
         out_files = []
         for filename in in_files:
             from_filename = filename
-            to_filename = filename + ".processing"
+            to_filename = copy.deepcopy(filename)
+            to_filename.name = to_filename.name + ".processing"
             os.rename(
-                os.path.join(self._from_directory, from_filename),
-                os.path.join(self._from_directory, to_filename),
+                os.path.join(self._from_directory, from_filename.name),
+                os.path.join(self._from_directory, to_filename.name),
             )
             out_files.append(to_filename)
         return out_files
 
-    def _download_files(self, in_files: list[str]) -> list[str]:
+    def _download_files(self, in_files: list[File]) -> list[File]:
         out_files = []
         for filename in in_files:
             from_filename = filename
-            to_filename = filename[:-11]
+            to_filename = copy.deepcopy(filename)
+            to_filename.name = to_filename.name[:-11]
 
             with open(
-                os.path.join(self._from_directory, from_filename), "rb"
+                os.path.join(self._from_directory, from_filename.name), "rb"
             ) as file_bytes:
                 file_data = file_bytes.read()
-            with open(os.path.join(self._to_directory, to_filename), "wb") as f_byte:
+            with open(
+                os.path.join(self._to_directory, to_filename.name), "wb"
+            ) as f_byte:
                 f_byte.write(file_data)
 
-            os.remove(os.path.join(self._from_directory, from_filename))
+            os.remove(os.path.join(self._from_directory, from_filename.name))
 
             out_files.append(to_filename)
         return out_files
 
-    def _upload_files(self, in_files: list[str]) -> list[str]:
+    def _upload_files(self, in_files: list[File]) -> list[File]:
         return self._download_files(in_files)
 
     def _disconnect(self):

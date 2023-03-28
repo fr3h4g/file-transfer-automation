@@ -4,6 +4,7 @@ from __future__ import annotations
 from typing import Literal
 
 from filetransferautomation import steps, tasks
+from filetransferautomation.models import File
 from filetransferautomation.transfer.protocols.local_directory import LocalDirectory
 
 
@@ -26,7 +27,7 @@ class Transfer:
                 direction=direction, task=task, step=step, work_directory=work_directory
             )
 
-    def run(self) -> list[str]:
+    def run(self) -> list[File]:
         """Run transfer with loaded protocol."""
         if self._transfer_protocol:
             return self._transfer_protocol.run()

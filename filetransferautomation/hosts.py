@@ -1,22 +1,7 @@
 """Hosts data."""
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Literal
-
-
-@dataclass
-class Host:
-    """Host dataclass."""
-
-    name: str
-    type: Literal["local_directory"] | Literal["unc_share"]
-    host_id: int | None = None
-    directory: str | None = None
-    share: str | None = None
-    username: str | None = None
-    password: str | None = None
-    description: str | None = None
+from filetransferautomation.models import Host
 
 
 HOSTS: list[Host] = []

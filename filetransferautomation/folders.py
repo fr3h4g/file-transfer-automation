@@ -1,25 +1,17 @@
 """Folders."""
 from __future__ import annotations
 
-from dataclasses import dataclass
 import os
 
 from fastapi import APIRouter, UploadFile
 from fastapi.responses import FileResponse
 
 from filetransferautomation import settings
+from filetransferautomation.models import Folder
 
 router = APIRouter()
 
 FOLDERS = []
-
-
-@dataclass
-class Folder:
-    """Folder dataclass."""
-
-    folder_id: int
-    name: str
 
 
 def load_folders():
