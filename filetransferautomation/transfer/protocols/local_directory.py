@@ -1,7 +1,7 @@
 """Local directory protocol."""
 from __future__ import annotations
-import datetime
 
+import datetime
 import os
 
 from filetransferautomation.models import File

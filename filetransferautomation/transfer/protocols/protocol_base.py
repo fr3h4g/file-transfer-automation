@@ -1,11 +1,12 @@
 """Base protocol."""
 from __future__ import annotations
-import datetime
 
+import copy
+import datetime
 import logging
 import os
 from typing import Literal
-import copy
+
 from filetransferautomation import steps, tasks
 from filetransferautomation.common import compare_filter
 from filetransferautomation.models import File
