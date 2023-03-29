@@ -20,6 +20,7 @@ class LocalDirectory(ProtocolBase):
         if not self._remote_directory:
             raise ValueError("_remote_directory is not set.")
         out_files = []
+        file_count = 0
         for file in [File(file) for file in os.listdir(self._remote_directory)]:
             file.size = os.path.getsize(os.path.join(self._remote_directory, file.name))
             if not file.timestamp:
@@ -27,6 +28,9 @@ class LocalDirectory(ProtocolBase):
                     os.path.getmtime(os.path.join(self._remote_directory, file.name))
                 )
             out_files.append(file)
+            file_count += 1
+            if self._step.max_file_count and file_count == self._step.max_file_count:
+                break
         return out_files
 
     def _delete_file(self, file: File) -> bool:

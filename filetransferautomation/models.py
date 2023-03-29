@@ -38,6 +38,7 @@ class Step:
     share: str | None = None
     run_per_file: bool | None = None
     name: str | None = None
+    max_file_count: int | None = None
 
 
 @dataclass
