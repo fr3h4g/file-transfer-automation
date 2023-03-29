@@ -80,8 +80,8 @@ class ProtocolBase:
                 logging.info(
                     f"Downloaded {downloaded_files} files from '{self._remote_directory}'."
                 )
+                logging.debug(f"Downloaded files: {download_files_out}.")
 
-                logging.debug(f"Downloaded files: {downloaded_files}.")
                 renamed_files_in = download_files_out
                 rename_files_out = []
                 rename_files_out = self._rename_work_files(renamed_files_in)
@@ -109,7 +109,7 @@ class ProtocolBase:
                 logging.info(
                     f"Uploaded {uploaded_files} files to '{self._remote_directory}'."
                 )
-                logging.debug(f"Uploaded files: {uploaded_files}.")
+                logging.debug(f"Uploaded files: {upload_files_out}.")
 
                 renamed_files_in = upload_files_out
                 rename_files_out = []
