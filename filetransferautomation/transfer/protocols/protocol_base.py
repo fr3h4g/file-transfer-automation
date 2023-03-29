@@ -57,8 +57,11 @@ class ProtocolBase:
         compare_files_out = []
         compare_files_out = self._compare_files(compare_files_in)
         matched_files = len(compare_files_out)
-        logging.info(f"Matched {matched_files} files of total {total_files} files.")
-        logging.debug(f"Matched files: {matched_files}.")
+        logging.info(
+            f"Matched {matched_files} files of total {total_files} "
+            f"files on filemask '{self._step.file_mask}'."
+        )
+        logging.debug(f"Matched files: {compare_files_out}.")
 
         done_files = []
 
@@ -68,9 +71,6 @@ class ProtocolBase:
                 rename_files_out = []
                 rename_files_out = self._rename_remote_files(renamed_files_in)
                 renamed_files = len(rename_files_out)
-                logging.debug(
-                    f"Renamed files from: {renamed_files_in} to {rename_files_out}."
-                )
 
                 download_files_in = rename_files_out
                 download_files_out = []
@@ -80,15 +80,11 @@ class ProtocolBase:
                 logging.info(
                     f"Downloaded {downloaded_files} files from '{self._remote_directory}'."
                 )
-                logging.debug(f"Downloaded files: {download_files_out}.")
 
                 renamed_files_in = download_files_out
                 rename_files_out = []
                 rename_files_out = self._rename_work_files(renamed_files_in)
                 renamed_files = len(rename_files_out)
-                logging.debug(
-                    f"Renamed files from: {renamed_files_in} to {rename_files_out}."
-                )
 
                 done_files = rename_files_out
 
@@ -97,9 +93,6 @@ class ProtocolBase:
                 rename_files_out = []
                 rename_files_out = self._rename_work_files(renamed_files_in)
                 renamed_files = len(rename_files_out)
-                logging.debug(
-                    f"Renamed files from: {renamed_files_in} to {rename_files_out}."
-                )
 
                 upload_files_in = rename_files_out
                 upload_files_out = []
@@ -109,15 +102,11 @@ class ProtocolBase:
                 logging.info(
                     f"Uploaded {uploaded_files} files to '{self._remote_directory}'."
                 )
-                logging.debug(f"Uploaded files: {upload_files_out}.")
 
                 renamed_files_in = upload_files_out
                 rename_files_out = []
                 rename_files_out = self._rename_remote_files(renamed_files_in)
                 renamed_files = len(rename_files_out)
-                logging.debug(
-                    f"Renamed files from: {renamed_files_in} to {rename_files_out}."
-                )
 
                 done_files = rename_files_out
         else:
@@ -154,11 +143,11 @@ class ProtocolBase:
             else:
                 self._rename_from = file.name
                 self._rename_to = file.name[:-11]
-            file = self._rename_file(copy.copy(file))
-            if file:
-                file.name = self._rename_to
-                out_files.append(file)
-                logging.debug(f"Remote file renamed to {file}")
+            file_out = self._rename_file(copy.copy(file))
+            if file_out:
+                file_out.name = self._rename_to
+                out_files.append(file_out)
+                logging.debug(f"Renamed remote file {file} to {file_out}.")
         return out_files
 
     def _delete_file(self, file: File) -> bool:
@@ -180,10 +169,11 @@ class ProtocolBase:
             else:
                 self._rename_from = file.name
                 self._rename_to = file.name + ".processing"
-            file = self._rename_work_file(copy.copy(file))
-            if file:
-                file.name = self._rename_to
-                out_files.append(file)
+            file_out = self._rename_work_file(copy.copy(file))
+            if file_out:
+                file_out.name = self._rename_to
+                out_files.append(file_out)
+                logging.debug(f"Renamed work file {file} to {file_out}.")
         return out_files
 
     def _rename_work_file(self, file: File) -> File:
@@ -203,6 +193,7 @@ class ProtocolBase:
     def __download_files(self, in_files: list[File]) -> list[File]:
         out_files = []
         for file in in_files:
+            logging.debug(f"Started downloading {file}.")
             file = self._download_file(file)
             logging.debug(f"File downloaded {file}.")
             if file:
@@ -217,6 +208,7 @@ class ProtocolBase:
     def __upload_files(self, in_files: list[File]) -> list[File]:
         out_files = []
         for file in in_files:
+            logging.debug(f"Started uploading {file}.")
             file = self._upload_file(file)
             logging.debug(f"File uploaded {file}.")
             if file:
