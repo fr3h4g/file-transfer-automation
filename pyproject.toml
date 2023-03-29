@@ -4,13 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "file-transfer-automation"
+version = "0.0.1"
 authors = [{ name = "Fredrik Haglund", email = "fr3h4h@gmail.com" }]
 readme = "README.md"
 requires-python = ">=3.10.0"
 classifiers = ["License :: OSI Approved :: MIT License"]
-dynamic = ["version"]
-
-
 dependencies = [
     "smbprotocol==1.10.1",
     "fastapi==0.95.0",
