@@ -5,6 +5,7 @@ import copy
 import datetime
 import logging
 import os
+import time
 from typing import Literal
 
 from filetransferautomation import steps, tasks
@@ -81,10 +82,18 @@ class ProtocolBase:
                 download_files_in = rename_files_out
                 download_files_out = []
                 logging.info(f"Downloading {renamed_files} files.")
+                start_time = time.time()
                 download_files_out = self.__download_files(download_files_in)
+                sum_bytes = sum(
+                    [file.size if file.size else 0 for file in download_files_out]
+                )
+                duration = time.time() - start_time
                 downloaded_files = len(download_files_out)
                 logging.info(
-                    f"Downloaded {downloaded_files} files from '{self._remote_directory}'."
+                    f"Downloaded {downloaded_files} files, {sum_bytes} bytes "
+                    f"from '{self._remote_directory}'. "
+                    f"Duration: {round(duration,2)} seconds. "
+                    f"{round(sum_bytes / duration, 0)} bytes/sec."
                 )
 
                 renamed_files_in = download_files_out
@@ -111,10 +120,18 @@ class ProtocolBase:
                 upload_files_in = update_files_out
                 upload_files_out = []
                 logging.info(f"Uploading {renamed_files} files.")
+                start_time = time.time()
                 upload_files_out = self.__upload_files(upload_files_in)
+                sum_bytes = sum(
+                    [file.size if file.size else 0 for file in upload_files_out]
+                )
+                duration = time.time() - start_time
                 uploaded_files = len(upload_files_out)
                 logging.info(
-                    f"Uploaded {uploaded_files} files to '{self._remote_directory}'."
+                    f"Uploaded {uploaded_files} files, {sum_bytes} bytes "
+                    f"to '{self._remote_directory}'. "
+                    f"Duration: {round(duration,2)} seconds. "
+                    f"{round(sum_bytes / duration, 0)} bytes/sec."
                 )
 
                 renamed_files_in = upload_files_out
