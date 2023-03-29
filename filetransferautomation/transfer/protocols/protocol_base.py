@@ -1,5 +1,6 @@
 """Base protocol."""
 from __future__ import annotations
+import datetime
 
 import logging
 import os
@@ -53,7 +54,11 @@ class ProtocolBase:
         logging.debug(f"Files in directory: {get_files_out}.")
         total_files = len(get_files_out)
 
-        compare_files_in = get_files_out
+        tag_files_in = get_files_out
+        tag_files_out = []
+        tag_files_out = self._tag_files(tag_files_in)
+
+        compare_files_in = tag_files_out
         compare_files_out = []
         compare_files_out = self._compare_files(compare_files_in)
         matched_files = len(compare_files_out)
@@ -86,15 +91,23 @@ class ProtocolBase:
                 rename_files_out = self._rename_work_files(renamed_files_in)
                 renamed_files = len(rename_files_out)
 
-                done_files = rename_files_out
+                update_files_in = rename_files_out
+                update_files_out = []
+                update_files_out = self._update_files_info(update_files_in)
 
+                done_files = update_files_out
+                logging.debug(f"Done files {done_files}.")
             else:
                 renamed_files_in = compare_files_out
                 rename_files_out = []
                 rename_files_out = self._rename_work_files(renamed_files_in)
                 renamed_files = len(rename_files_out)
 
-                upload_files_in = rename_files_out
+                update_files_in = rename_files_out
+                update_files_out = []
+                update_files_out = self._update_files_info(update_files_in)
+
+                upload_files_in = update_files_out
                 upload_files_out = []
                 logging.info(f"Uploading {renamed_files} files.")
                 upload_files_out = self.__upload_files(upload_files_in)
@@ -109,6 +122,7 @@ class ProtocolBase:
                 renamed_files = len(rename_files_out)
 
                 done_files = rename_files_out
+                logging.debug(f"Done files {done_files}.")
         else:
             logging.info("No files found to retrieve.")
 
@@ -120,11 +134,47 @@ class ProtocolBase:
     def _connect(self) -> bool:
         return True
 
+    def _tag_files(self, in_files: list[File]) -> list[File]:
+        out_files = []
+        for file in in_files:
+            file.task_id = self._task.task_id
+            out_files.append(file)
+        return out_files
+
+    def _update_files_info(self, in_files: list[File]) -> list[File]:
+        if not self._work_directory:
+            raise ValueError("_work_directory is not set.")
+        out_files = []
+        for file in in_files:
+            file.size = os.path.getsize(os.path.join(self._work_directory, file.name))
+            if not file.timestamp:
+                file_time = os.path.getctime(
+                    os.path.join(self._work_directory, file.name)
+                )
+                file.timestamp = datetime.datetime.fromtimestamp(file_time)
+            else:
+                file_time = file.timestamp.timestamp()
+                os.utime(
+                    os.path.join(self._work_directory, file.name),
+                    times=(file_time, file_time),
+                )
+            out_files.append(file)
+        return out_files
+
     def _list_files(self) -> list[File]:
         return []
 
     def _list_work_files(self) -> list[File]:
-        out_files = [File(file) for file in os.listdir(self._work_directory)]
+        if not self._work_directory:
+            raise ValueError("_work_directory is not set.")
+        out_files = []
+        for file in [File(file) for file in os.listdir(self._work_directory)]:
+            file.size = os.path.getsize(os.path.join(self._work_directory, file.name))
+            if not file.timestamp:
+                file.timestamp = datetime.datetime.fromtimestamp(
+                    os.path.getmtime(os.path.join(self._work_directory, file.name))
+                )
+            out_files.append(file)
         return out_files
 
     def _compare_files(self, in_files: list[File]) -> list[File]:

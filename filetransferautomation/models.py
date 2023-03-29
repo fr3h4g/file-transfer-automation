@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import datetime
 from typing import Literal
 import uuid
 
@@ -75,4 +76,7 @@ class File:
     """File dataclass."""
 
     name: str
+    task_id: int | None = None
+    size: int | None = None
+    timestamp: datetime.datetime | None = None
     file_id: str = str(uuid.uuid4())
