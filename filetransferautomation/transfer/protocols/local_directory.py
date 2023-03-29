@@ -36,6 +36,7 @@ class LocalDirectory(ProtocolBase):
             os.path.join(self._remote_directory, self._rename_from),
             os.path.join(self._remote_directory, self._rename_to),
         )
+        file.name = self._rename_to
         return file
 
     def _download_file(self, file: File) -> File | None:
