@@ -10,7 +10,8 @@ from filetransferautomation.models import Task
 router = APIRouter()
 
 
-def get_task(task_id: int) -> models.Task | None:
+@router.get("/{task_id}")
+def get_task(task_id: int):
     """Get a task."""
     db = SessionLocal()
     db_task = db.query(models.Task).filter(models.Task.task_id == task_id).one_or_none()
@@ -65,10 +66,34 @@ async def update_task(task_id: int, task: shemas.AddTask):
 async def delete_task(task_id: int):
     """Delete a task."""
     db = SessionLocal()
-    db_task = db.query(Task).filter(Task.task_id == task_id)
+    db_task = db.query(models.Task).filter(models.Task.task_id == task_id)
     if not db_task:
         raise HTTPException(status_code=404, detail="task not found")
     if db_task:
         db_task.delete()
+        db.commit()
+    return None
+
+
+@router.get("/{task_id}/schedules")
+def get_task_schedules(task_id: int):
+    """Get a tasks schedules."""
+    db = SessionLocal()
+    db_task = db.query(models.Schedule).filter(models.Schedule.task_id == task_id).all()
+    return db_task
+
+
+@router.delete("/{task_id}/schedules/{schedule_id}", status_code=204)
+async def delete_schedule(task_id: int, schedule_id: int):
+    """Delete a schedule."""
+    db = SessionLocal()
+    db_schedule = db.query(models.Schedule).filter(
+        models.Schedule.schedule_id == schedule_id,
+        models.Schedule.task_id == task_id,
+    )
+    if not db_schedule:
+        raise HTTPException(status_code=404, detail="schedule not found")
+    if db_schedule:
+        db_schedule.delete()
         db.commit()
     return None

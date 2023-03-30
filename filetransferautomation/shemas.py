@@ -60,3 +60,10 @@ class AddStep(BaseModel):
     max_file_count: int | None = None
     host_id: int | None = None
     process_id: int | None = None
+
+
+class AddSchedule(BaseModel):
+    """Add schedule model."""
+
+    task_id: int
+    cron: str
