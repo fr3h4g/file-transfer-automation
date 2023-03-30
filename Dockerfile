@@ -7,7 +7,7 @@ WORKDIR /app
 
 COPY pyproject.toml .
 
-COPY ./src/filetransferautomation /app/filetransferautomation
+COPY ./filetransferautomation /app/filetransferautomation
 
 RUN pip3.10 install .
 
