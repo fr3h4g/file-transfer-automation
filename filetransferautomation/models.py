@@ -14,7 +14,9 @@ class Schedule(Base):
 
     __tablename__ = "schedules"
 
-    schedule_id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    schedule_id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, index=True, unique=True, autoincrement=True
+    )
     task_id: Mapped[int] = mapped_column(Integer, ForeignKey("tasks.task_id"))
     cron: Mapped[str] = mapped_column(String)
 
@@ -28,13 +30,15 @@ class Task(Base):
 
     __tablename__ = "tasks"
 
-    task_id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    task_id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, index=True, unique=True, autoincrement=True
+    )
     name: Mapped[str] = mapped_column(String)
     description: Mapped[str] = mapped_column(String)
     active: Mapped[int] = mapped_column(Integer)
 
-    schedules: Mapped[list[Schedule]] = relationship()
-    steps: Mapped[list[Step]] = relationship()
+    schedules: Mapped[list[Schedule]] = relationship(lazy="immediate")
+    steps: Mapped[list[Step]] = relationship(lazy="immediate")
 
     def __repr__(self):
         """Table repr."""
@@ -46,7 +50,9 @@ class Step(Base):
 
     __tablename__ = "steps"
 
-    step_id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    step_id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, index=True, unique=True, autoincrement=True
+    )
     task_id: Mapped[int] = mapped_column(Integer, ForeignKey("tasks.task_id"))
     step_type: Mapped[
         Literal["source"] | Literal["process"] | Literal["destination"]
@@ -68,12 +74,12 @@ class Step(Base):
     host_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("hosts.host_id"), default=None
     )
-    host: Mapped[Host] = relationship(lazy=False)
+    host: Mapped[Host] = relationship(lazy="immediate")
 
     process_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("processes.process_id"), default=None
     )
-    process: Mapped[Process | None] = relationship()
+    process: Mapped[Process | None] = relationship(lazy="immediate")
 
     def __repr__(self):
         """Table repr."""
@@ -85,7 +91,9 @@ class Process(Base):
 
     __tablename__ = "processes"
 
-    process_id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    process_id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, index=True, unique=True, autoincrement=True
+    )
 
     name: Mapped[str | None] = mapped_column(String, default=None)
 
@@ -95,7 +103,9 @@ class Host(Base):
 
     __tablename__ = "hosts"
 
-    host_id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    host_id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, index=True, unique=True, autoincrement=True
+    )
     name: Mapped[str] = mapped_column(String)
     type: Mapped[Literal["local_directory"] | Literal["unc_share"]] = mapped_column(
         String, default=None

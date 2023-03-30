@@ -1,5 +1,5 @@
+"""Populate test data for dev."""
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from filetransferautomation import models
 
@@ -10,8 +10,8 @@ engine = create_engine(
     connect_args={"check_same_thread": False},
     # echo=True,
 )
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 db = SessionLocal()
 

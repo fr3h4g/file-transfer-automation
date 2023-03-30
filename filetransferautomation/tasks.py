@@ -52,7 +52,7 @@ def get_all_tasks() -> list[models.Task]:
     return result
 
 
-@router.get("")  # , response_model=list[Task])
+@router.get("")
 async def get_tasks():
     """Get all tasks."""
     return get_all_tasks()
