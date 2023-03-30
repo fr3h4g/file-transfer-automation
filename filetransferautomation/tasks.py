@@ -11,9 +11,6 @@ from filetransferautomation.models import Task
 router = APIRouter()
 
 
-TASKS: list[Task] = []
-
-
 def get_task(task_id: int) -> models.Task | None:
     """Get a task."""
     db = SessionLocal()
