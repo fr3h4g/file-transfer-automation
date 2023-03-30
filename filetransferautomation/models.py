@@ -37,8 +37,8 @@ class Task(Base):
     description: Mapped[str] = mapped_column(String)
     active: Mapped[int] = mapped_column(Integer)
 
-    schedules: Mapped[list[Schedule]] = relationship(lazy="immediate")
-    steps: Mapped[list[Step]] = relationship(lazy="immediate")
+    schedules: Mapped[list[Schedule]] = relationship(lazy="selectin")
+    steps: Mapped[list[Step]] = relationship(lazy="selectin")
 
     def __repr__(self):
         """Table repr."""
@@ -74,12 +74,12 @@ class Step(Base):
     host_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("hosts.host_id"), default=None
     )
-    host: Mapped[Host] = relationship(lazy="immediate")
+    host: Mapped[Host] = relationship(lazy="selectin")
 
     process_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("processes.process_id"), default=None
     )
-    process: Mapped[Process | None] = relationship(lazy="immediate")
+    process: Mapped[Process | None] = relationship(lazy="selectin")
 
     def __repr__(self):
         """Table repr."""

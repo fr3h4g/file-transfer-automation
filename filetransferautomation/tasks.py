@@ -1,11 +1,12 @@
 """Tasks api and data."""
 from __future__ import annotations
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
-from filetransferautomation import models
+from filetransferautomation import models, shemas
 from filetransferautomation.database import SessionLocal
 from filetransferautomation.models import Task
+from sqlalchemy import delete
 
 router = APIRouter()
 
@@ -15,44 +16,63 @@ TASKS: list[Task] = []
 
 def get_task(task_id: int) -> models.Task | None:
     """Get a task."""
-    # for task in TASKS:
-    #     if task.task_id == task_id:
-    #         return task
-    # return None
     db = SessionLocal()
-    result = db.query(models.Task).filter(models.Task.task_id == task_id).first()
-    return result
+    db_task = db.query(models.Task).filter(models.Task.task_id == task_id).one_or_none()
+    if not db_task:
+        raise HTTPException(status_code=404, detail="task not found")
+    return db_task
 
 
-def get_active_tasks() -> list[models.Task]:
-    """Get a task."""
-    # for task in TASKS:
-    #     if task.task_id == task_id:
-    #         return task
-    # return None
+@router.get("/active")
+def get_active_tasks():
+    """Get all active tasks."""
     db = SessionLocal()
     result = db.query(models.Task).filter(models.Task.active == 1).all()
-    # for row in result:
-    # row.schedules = get_schedules(task_id=row.task_id)
-    # row.steps = get_steps(task_id=row.task_id)
-    return result
-
-
-def get_all_tasks() -> list[models.Task]:
-    """Get a task."""
-    # for task in TASKS:
-    #     if task.task_id == task_id:
-    #         return task
-    # return None
-    db = SessionLocal()
-    result = db.query(models.Task).all()
-    # for row in result:
-    # row.schedules = get_schedules(task_id=row.task_id)
-    # row.steps = get_steps(task_id=row.task_id)
     return result
 
 
 @router.get("")
 async def get_tasks():
     """Get all tasks."""
-    return get_all_tasks()
+    db = SessionLocal()
+    result = db.query(models.Task).all()
+    return result
+
+
+@router.post("", status_code=201)
+async def add_task(task: shemas.AddTask):
+    """Add a task."""
+    db = SessionLocal()
+    db_task = Task(**task.dict())
+    db.add(db_task)
+    db.commit()
+    db.refresh(db_task)
+    return db_task
+
+
+@router.put("/{task_id}")
+async def update_task(task_id: int, task: shemas.AddTask):
+    """Update a task."""
+    db = SessionLocal()
+    db_task = db.query(Task).filter(Task.task_id == task_id)
+    if not db_task:
+        raise HTTPException(status_code=404, detail="task not found")
+    if db_task:
+        db_task.update(dict(task))
+        db.commit()
+        db_task = db.query(Task).filter(Task.task_id == task_id).one_or_none()
+        return db_task
+    return None
+
+
+@router.delete("/{task_id}", status_code=204)
+async def delete_task(task_id: int):
+    """Delete a task."""
+    db = SessionLocal()
+    db_task = db.query(Task).filter(Task.task_id == task_id)
+    if not db_task:
+        raise HTTPException(status_code=404, detail="task not found")
+    if db_task:
+        db_task.delete()
+        db.commit()
+    return None
