@@ -12,7 +12,7 @@ from fastapi import FastAPI
 from scheduleplus.scheduler import Scheduler
 import uvicorn
 
-from filetransferautomation import folders, settings, tasks
+from filetransferautomation import folders, hosts, settings, tasks
 from filetransferautomation.common import compare_filter
 from filetransferautomation.transfer import Transfer
 
@@ -34,6 +34,12 @@ app.include_router(
     tasks.router,
     prefix="/api/v1/tasks",
     tags=["tasks"],
+)
+
+app.include_router(
+    hosts.router,
+    prefix="/api/v1/hosts",
+    tags=["hosts"],
 )
 
 app.include_router(

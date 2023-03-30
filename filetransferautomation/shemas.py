@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import datetime
+from typing import Literal
 import uuid
 from pydantic import BaseModel
 
@@ -32,3 +33,15 @@ class AddTask(BaseModel):
     name: str
     description: str | None = ""
     active: int = 1
+
+
+class AddHost(BaseModel):
+    """Add host model."""
+
+    name: str
+    type: Literal["local_directory"] | Literal["unc_share"]
+    directory: str | None = None
+    share: str | None = None
+    username: str | None = None
+    password: str | None = None
+    description: str | None = None
