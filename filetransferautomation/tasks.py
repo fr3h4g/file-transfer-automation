@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException
 from filetransferautomation import models, shemas
 from filetransferautomation.database import SessionLocal
 from filetransferautomation.models import Task
-from sqlalchemy import delete
+
 
 router = APIRouter()
 
