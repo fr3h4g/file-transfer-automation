@@ -45,3 +45,17 @@ class AddHost(BaseModel):
     username: str | None = None
     password: str | None = None
     description: str | None = None
+
+
+class AddStep(BaseModel):
+    """Add steps model."""
+
+    task_id: int
+    step_type: Literal["source"] | Literal["process"] | Literal["destination"]
+    file_mask: str | None = None
+    filename: str | None = None
+    run_per_file: bool | None = None
+    name: str | None = None
+    max_file_count: int | None = None
+    host_id: int | None = None
+    process_id: int | None = None
