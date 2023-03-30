@@ -7,7 +7,6 @@ from filetransferautomation import models, shemas
 from filetransferautomation.database import SessionLocal
 from filetransferautomation.models import Host
 
-
 router = APIRouter()
 
 

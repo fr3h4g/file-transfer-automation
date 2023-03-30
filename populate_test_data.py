@@ -1,6 +1,7 @@
 """Populate test data for dev."""
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
 from filetransferautomation import models
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///test.db"
