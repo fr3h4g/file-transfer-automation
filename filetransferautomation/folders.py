@@ -7,7 +7,7 @@ from fastapi import APIRouter, UploadFile
 from fastapi.responses import FileResponse
 
 from filetransferautomation import settings
-from filetransferautomation.models import Folder
+from filetransferautomation.shemas import Folder
 
 router = APIRouter()
 

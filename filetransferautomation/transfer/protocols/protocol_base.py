@@ -10,7 +10,7 @@ from typing import Literal
 
 from filetransferautomation import steps, tasks
 from filetransferautomation.common import compare_filter
-from filetransferautomation.models import File
+from filetransferautomation.shemas import File
 
 
 class ProtocolBase:

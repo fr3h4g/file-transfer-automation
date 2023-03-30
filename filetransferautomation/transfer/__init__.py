@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import Literal
 
 from filetransferautomation import steps, tasks
-from filetransferautomation.models import File
+from filetransferautomation.shemas import File
 from filetransferautomation.transfer.protocols.local_directory import LocalDirectory
 
 

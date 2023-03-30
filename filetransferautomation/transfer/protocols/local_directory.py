@@ -4,7 +4,7 @@ from __future__ import annotations
 import datetime
 import os
 
-from filetransferautomation.models import File
+from filetransferautomation.shemas import File
 
 from .protocol_base import ProtocolBase
 

@@ -17,10 +17,14 @@ dependencies = [
     "python-dotenv==1.0.0",
     "scheduleplus",
     "python-multipart",
+    "sqlalchemy==2.0.7",
 ]
 
 [project.optional-dependencies]
 test = ["ruff"]
+
+[tool.setuptools]
+packages = ["filetransferautomation"]
 
 [tool.ruff]
 target-version = "py310"

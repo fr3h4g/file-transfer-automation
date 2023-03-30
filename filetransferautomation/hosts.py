@@ -1,7 +1,7 @@
 """Hosts data."""
 from __future__ import annotations
 
-from filetransferautomation.models import Host
+from filetransferautomation.shemas import Host
 
 HOSTS: list[Host] = []
 

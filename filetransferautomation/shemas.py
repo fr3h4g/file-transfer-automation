@@ -1,10 +1,13 @@
-"""Models."""
+"""Schemas."""
 from __future__ import annotations
 
 from dataclasses import dataclass
 import datetime
 from typing import Literal
 import uuid
+
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
 
 
 @dataclass

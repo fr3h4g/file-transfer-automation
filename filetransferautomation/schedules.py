@@ -1,7 +1,7 @@
 """Schedules data."""
 from __future__ import annotations
 
-from filetransferautomation.models import Schedule
+from filetransferautomation.shemas import Schedule
 
 SCHEDULES: list[Schedule] = []
 

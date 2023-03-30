@@ -18,6 +18,13 @@ from filetransferautomation.transfer import Transfer
 
 # from filetransferautomation.database_init import create_database
 
+from . import models
+
+from sqlalchemy.orm import Session
+
+from .database import SessionLocal, engine
+
+
 if not settings.DEV_MODE:
     logging.basicConfig(level=logging.INFO, stream=sys.stderr)
 if settings.DEV_MODE:
@@ -117,8 +124,9 @@ async def main() -> None:
 def startup():
     """Start File Transfer Automation."""
 
-    # logging.info("Creating database.")
-    # create_database()
+    models.Base.metadata.create_all(bind=engine)
+
+    db = SessionLocal()
 
     logging.info("Loading hosts.")
     hosts_data = hosts.load_hosts()

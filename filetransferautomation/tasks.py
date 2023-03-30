@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from filetransferautomation.models import Task
+from filetransferautomation.shemas import Task
 
 # from filetransferautomation import hosts
 # from filetransferautomation.hosts import Host, get_host
