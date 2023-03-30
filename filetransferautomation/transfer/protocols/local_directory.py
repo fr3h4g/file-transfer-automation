@@ -13,7 +13,7 @@ class LocalDirectory(ProtocolBase):
     """Local directory protocol."""
 
     def _connect(self) -> bool:
-        self._remote_directory = self._step.directory
+        self._remote_directory = self._step.host.directory
         return True
 
     def _list_files(self) -> list[File]:

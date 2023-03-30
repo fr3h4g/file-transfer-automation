@@ -12,18 +12,12 @@ from fastapi import FastAPI
 from scheduleplus.scheduler import Scheduler
 import uvicorn
 
-from filetransferautomation import folders, hosts, schedules, settings, steps, tasks
+from filetransferautomation import folders, settings, tasks
 from filetransferautomation.common import compare_filter
 from filetransferautomation.transfer import Transfer
 
-# from filetransferautomation.database_init import create_database
-
 from . import models
-
-from sqlalchemy.orm import Session
-
-from .database import SessionLocal, engine
-
+from .database import engine
 
 if not settings.DEV_MODE:
     logging.basicConfig(level=logging.INFO, stream=sys.stderr)
@@ -49,7 +43,7 @@ app.include_router(
 )
 
 
-def rename_process(task: tasks.Task, step: steps.Step, work_directory: str):
+def rename_process(task: tasks.Task, step: models.Step, work_directory: str):
     """Rename a file."""
     files_renamed = []
 
@@ -73,7 +67,7 @@ def rename_process(task: tasks.Task, step: steps.Step, work_directory: str):
             files_renamed.append(filename)
 
 
-def run_task(task: tasks.Task):
+def run_task(task: models.Task):
     """Run task."""
     task_id = str(uuid.uuid4())
     logging.info(
@@ -83,9 +77,9 @@ def run_task(task: tasks.Task):
     os.mkdir(work_directory)
     downloaded_files = []
     for step in task.steps:
-        if step.step_type == "source" and step.type:
+        if step.host and step.step_type == "source" and step.host.type:
             # found_files = local_directory_transfer(task, step, work_directory)
-            transfer = Transfer(step.type, "download", task, step, work_directory)
+            transfer = Transfer(step.host.type, "download", task, step, work_directory)
             downloaded_files = transfer.run()
     if downloaded_files:
         for step in task.steps:
@@ -95,8 +89,10 @@ def run_task(task: tasks.Task):
                 elif step.type == "script":
                     pass
         for step in task.steps:
-            if step.step_type == "destination" and step.type:
-                transfer = Transfer(step.type, "upload", task, step, work_directory)
+            if step.host and step.step_type == "destination" and step.host.type:
+                transfer = Transfer(
+                    step.host.type, "upload", task, step, work_directory
+                )
                 transfer.run()
     os.rmdir(work_directory)
     logging.info(
@@ -126,26 +122,12 @@ def startup():
 
     models.Base.metadata.create_all(bind=engine)
 
-    db = SessionLocal()
-
-    logging.info("Loading hosts.")
-    hosts_data = hosts.load_hosts()
-    logging.info(f"{len(hosts_data)} hosts loaded.")
-
-    logging.info("Loading schedules.")
-    schedules_data = schedules.load_schedules()
-    logging.info(f"{len(schedules_data)} schedules loaded.")
-
-    logging.info("Loading steps.")
-    steps_data = steps.load_steps()
-    logging.info(f"{len(steps_data)} steps loaded.")
-
     logging.info("Loading folders.")
     folders_data = folders.load_folders()
     logging.info(f"{len(folders_data)} folders loaded.")
 
     logging.info("Loading tasks.")
-    tasks_data = tasks.load_tasks()
+    tasks_data = tasks.get_active_tasks()
     logging.info(f"{len(tasks_data)} tasks loaded.")
     for task in tasks_data:
         if task.active:

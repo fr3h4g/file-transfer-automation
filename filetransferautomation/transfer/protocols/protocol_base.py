@@ -8,7 +8,7 @@ import os
 import time
 from typing import Literal
 
-from filetransferautomation import steps, tasks
+from filetransferautomation import models
 from filetransferautomation.common import compare_filter
 from filetransferautomation.shemas import File
 
@@ -19,8 +19,8 @@ class ProtocolBase:
     def __init__(
         self,
         direction: Literal["download"] | Literal["upload"],
-        task: tasks.Task,
-        step: steps.Step,
+        task: models.Task,
+        step: models.Step,
         work_directory: str,
     ):
         """Init protocol base class."""

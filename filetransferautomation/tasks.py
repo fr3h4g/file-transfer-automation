@@ -3,21 +3,9 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from filetransferautomation.shemas import Task
-
-# from filetransferautomation import hosts
-# from filetransferautomation.hosts import Host, get_host
-from filetransferautomation.schedules import get_schedules
-
-# from filetransferautomation.settings import MYSQL_DB, MYSQL_HOST, MYSQL_PASS, MYSQL_USER
-from filetransferautomation.steps import get_steps
-
-# import json
-# from typing import Literal
-
-
-# import pymysql.cursors
-
+from filetransferautomation import models
+from filetransferautomation.database import SessionLocal
+from filetransferautomation.models import Task
 
 router = APIRouter()
 
@@ -25,60 +13,46 @@ router = APIRouter()
 TASKS: list[Task] = []
 
 
-def load_tasks() -> list[Task]:
-    """Load tasks from database."""
-    global TASKS
-
-    TASKS = []
-    TASKS.append(
-        Task(
-            task_id=1,
-            name="Local copy test",
-            schedules=get_schedules(task_id=1),
-            steps=get_steps(task_id=1),
-            description="",
-            active=1,
-        )
-    )
-    # connection = pymysql.connect( # type: ignore
-    #     host=MYSQL_HOST,
-    #     user=MYSQL_USER,
-    #     password=MYSQL_PASS,
-    #     database=MYSQL_DB,
-    #     charset="utf8mb4",
-    #     cursorclass=pymysql.cursors.DictCursor,
-    # )
-
-    # with connection and connection.cursor() as cursor:
-    #     sql = "SELECT * FROM tasks"
-    #     cursor.execute(sql, ())
-    #     result = cursor.fetchall()
-    #     for row in result:
-    #         tmp = json.loads(row["steps"])
-    #         steps = []
-    #         for step in tmp:
-    #             steps.append(Step(**step))
-    #         row["steps"] = steps
-
-    #         tmp = json.loads(row["schedules"])
-    #         schedules = []
-    #         for schedule in tmp:
-    #             schedules.append(Schedule(**schedule))
-    #         row["schedules"] = schedules
-
-    #         TASKS.append(Task(**row))
-    return TASKS
-
-
-def get_task(task_id: int) -> Task | None:
+def get_task(task_id: int) -> models.Task | None:
     """Get a task."""
-    for task in TASKS:
-        if task.task_id == task_id:
-            return task
-    return None
+    # for task in TASKS:
+    #     if task.task_id == task_id:
+    #         return task
+    # return None
+    db = SessionLocal()
+    result = db.query(models.Task).filter(models.Task.task_id == task_id).first()
+    return result
 
 
-@router.get("", response_model=list[Task])
+def get_active_tasks() -> list[models.Task]:
+    """Get a task."""
+    # for task in TASKS:
+    #     if task.task_id == task_id:
+    #         return task
+    # return None
+    db = SessionLocal()
+    result = db.query(models.Task).filter(models.Task.active == 1).all()
+    # for row in result:
+    # row.schedules = get_schedules(task_id=row.task_id)
+    # row.steps = get_steps(task_id=row.task_id)
+    return result
+
+
+def get_all_tasks() -> list[models.Task]:
+    """Get a task."""
+    # for task in TASKS:
+    #     if task.task_id == task_id:
+    #         return task
+    # return None
+    db = SessionLocal()
+    result = db.query(models.Task).all()
+    # for row in result:
+    # row.schedules = get_schedules(task_id=row.task_id)
+    # row.steps = get_steps(task_id=row.task_id)
+    return result
+
+
+@router.get("")  # , response_model=list[Task])
 async def get_tasks():
     """Get all tasks."""
-    return load_tasks()
+    return get_all_tasks()
