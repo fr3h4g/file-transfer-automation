@@ -47,7 +47,7 @@ class TaskLog(Base):
         DateTime, nullable=True, default=None
     )
     status: Mapped[
-        Literal["running"] | Literal["error"] | Literal["done"]
+        Literal["running"] | Literal["error"] | Literal["success"]
     ] = mapped_column(String)
     duration_sec: Mapped[float | None] = mapped_column(Float, default=None)
 

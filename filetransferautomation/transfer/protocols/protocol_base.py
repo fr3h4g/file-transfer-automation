@@ -291,7 +291,7 @@ class ProtocolBase:
                 logging.debug(f"Remote file deleted {file}.")
         return out_files
 
-    def _download_file(self, file: File) -> File | None:
+    def _download_file(self, file: File) -> File:
         return file
 
     def __upload_files(self, in_files: list[File]) -> list[File]:
@@ -320,7 +320,7 @@ class ProtocolBase:
                 logging.debug(f"Work file deleted {file}.")
         return out_files
 
-    def _upload_file(self, file: File) -> File | None:
+    def _upload_file(self, file: File) -> File:
         return file
 
     def _disconnect_from_remote(self):

@@ -53,7 +53,7 @@ class LocalDirectory(ProtocolBase):
         file.name = self._rename_to
         return file
 
-    def _download_file(self, file: File) -> File | None:
+    def _download_file(self, file: File) -> File:
         if not self._remote_directory:
             raise ValueError("_remote_directory is not set.")
         with open(os.path.join(self._remote_directory, file.name), "rb") as from_file:
@@ -62,7 +62,7 @@ class LocalDirectory(ProtocolBase):
             to_file.write(file_data)
         return file
 
-    def _upload_file(self, file: File) -> File | None:
+    def _upload_file(self, file: File) -> File:
         if not self._remote_directory:
             raise ValueError("_remote_directory is not set.")
         with open(os.path.join(self._work_directory, file.name), "rb") as from_file:

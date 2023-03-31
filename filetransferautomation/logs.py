@@ -89,7 +89,7 @@ def add_file_log_entry(
 def add_task_log_entry(
     task_run_id: str,
     task_id: int,
-    status: Literal["running"] | Literal["error"] | Literal["done"],
+    status: Literal["running"] | Literal["error"] | Literal["success"],
 ):
     """Add task log entry."""
     timestamp = datetime.datetime.now()

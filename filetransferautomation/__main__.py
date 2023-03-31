@@ -137,7 +137,7 @@ def run_task(task: models.Task):
     logging.info(
         f"--- Exiting task '{task.name}', id: {task.task_id}, task_run_id: {task_run_id}, thread {threading.get_native_id()}."
     )
-    add_task_log_entry(task_run_id, task.task_id, "done")
+    add_task_log_entry(task_run_id, task.task_id, "success")
 
 
 def run_task_threaded(task: tasks.Task):
