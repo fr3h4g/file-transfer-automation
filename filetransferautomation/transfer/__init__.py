@@ -20,11 +20,16 @@ class Transfer:
         task: tasks.Task,
         step: steps.Step,
         work_directory: str,
+        task_run_id: str,
     ):
         """Init transfer and load protocol."""
         if transfer_type == "local_directory":
             self._transfer_protocol = LocalDirectory(
-                direction=direction, task=task, step=step, work_directory=work_directory
+                direction=direction,
+                task=task,
+                step=step,
+                work_directory=work_directory,
+                task_run_id=task_run_id,
             )
 
     def run(self) -> list[File]:

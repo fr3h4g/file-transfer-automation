@@ -7,9 +7,11 @@ import logging
 import os
 import time
 from typing import Literal
+import uuid
 
 from filetransferautomation import models
 from filetransferautomation.common import compare_filter
+from filetransferautomation.logs import add_file_log_entry
 from filetransferautomation.shemas import File
 
 
@@ -22,12 +24,14 @@ class ProtocolBase:
         task: models.Task,
         step: models.Step,
         work_directory: str,
+        task_run_id: str,
     ):
         """Init protocol base class."""
         self._direction = direction
         self._task = task
         self._step = step
         self._work_directory = work_directory
+        self._taks_run_id = task_run_id
 
         self._remote_directory = None
 
@@ -53,6 +57,7 @@ class ProtocolBase:
                 f"Listing files in work directory '{self._work_directory}' for upload."
             )
             get_files_out = self._list_work_files()
+
         logging.debug(f"Files in directory: {get_files_out}.")
         total_files = len(get_files_out)
 
@@ -156,6 +161,8 @@ class ProtocolBase:
         out_files = []
         for file in in_files:
             file.task_id = self._task.task_id
+            if not file.file_id:
+                file.file_id = str(uuid.uuid4())
             out_files.append(file)
         return out_files
 
@@ -262,8 +269,22 @@ class ProtocolBase:
         out_files = []
         for file in in_files:
             logging.debug(f"Started downloading {file}.")
+            add_file_log_entry(
+                task_run_id=self._taks_run_id,
+                task_id=self._task.task_id,
+                step_id=self._step.step_id,
+                file=file,
+                status="downloading",
+            )
             file = self._download_file(file)
             logging.debug(f"File downloaded {file}.")
+            add_file_log_entry(
+                task_run_id=self._taks_run_id,
+                task_id=self._task.task_id,
+                step_id=self._step.step_id,
+                file=file,
+                status="downloaded",
+            )
             if file:
                 out_files.append(file)
                 self._delete_file(file)
@@ -277,8 +298,22 @@ class ProtocolBase:
         out_files = []
         for file in in_files:
             logging.debug(f"Started uploading {file}.")
+            add_file_log_entry(
+                task_run_id=self._taks_run_id,
+                task_id=self._task.task_id,
+                step_id=self._step.step_id,
+                file=file,
+                status="uploading",
+            )
             file = self._upload_file(file)
             logging.debug(f"File uploaded {file}.")
+            add_file_log_entry(
+                task_run_id=self._taks_run_id,
+                task_id=self._task.task_id,
+                step_id=self._step.step_id,
+                file=file,
+                status="uploaded",
+            )
             if file:
                 out_files.append(file)
                 self._delete_work_file(file)

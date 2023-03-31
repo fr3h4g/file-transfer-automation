@@ -4,7 +4,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 import datetime
 from typing import Literal
-import uuid
 
 from pydantic import BaseModel
 
@@ -22,10 +21,10 @@ class File:
     """File dataclass."""
 
     name: str
+    file_id: str | None = None
     task_id: int | None = None
     size: int | None = None
     timestamp: datetime.datetime | None = None
-    file_id: str = str(uuid.uuid4())
 
 
 class AddTask(BaseModel):
