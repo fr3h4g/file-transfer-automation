@@ -105,7 +105,8 @@ def run_task(task: models.Task):
     """Run task."""
     task_run_id = str(uuid.uuid4())
     logging.info(
-        f"--- Running task '{task.name}', id: {task.task_id}, task_run_id: {task_run_id}, thread {threading.get_native_id()}."
+        f"--- Running task '{task.name}', id: {task.task_id}, task_run_id: {task_run_id}, "
+        f"thread {threading.get_native_id()}."
     )
     add_task_log_entry(task_run_id, task.task_id, "running")
     work_directory = os.path.join(settings.WORK_DIR, task_run_id)
@@ -151,7 +152,8 @@ def run_task(task: models.Task):
         f"Task '{task.name}', id: {task.task_id}, task_id: {task_run_id} completed."
     )
     logging.info(
-        f"--- Exiting task '{task.name}', id: {task.task_id}, task_run_id: {task_run_id}, thread {threading.get_native_id()}."
+        f"--- Exiting task '{task.name}', id: {task.task_id}, task_run_id: {task_run_id}, "
+        f"thread {threading.get_native_id()}."
     )
     add_task_log_entry(task_run_id, task.task_id, "success")
 
