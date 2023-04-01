@@ -127,6 +127,8 @@ class Process(Base):
         Integer, primary_key=True, index=True, unique=True, autoincrement=True
     )
     name: Mapped[str | None] = mapped_column(String, default=None)
+    script_file: Mapped[str | None] = mapped_column(String, default=None)
+    per_file: Mapped[int] = mapped_column(String, default=0)
 
 
 class Host(Base):

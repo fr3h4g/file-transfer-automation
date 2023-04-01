@@ -20,7 +20,7 @@ def load_folders():
     FOLDERS.append(Folder(folder_id=1, name="test"))
 
     for folder in FOLDERS:
-        path = os.path.join(settings.DATA_DIR, folder.name)
+        path = os.path.join(settings.FOLDERS_DIR, folder.name)
         if not os.path.exists(path):
             os.mkdir(path)
 
@@ -48,7 +48,7 @@ def get_files(id: int):
     folder = get_folder(id)
     if not folder:
         return {"details": "folder not found."}
-    files = os.listdir(os.path.join(settings.DATA_DIR, folder.name))
+    files = os.listdir(os.path.join(settings.FOLDERS_DIR, folder.name))
     return files
 
 
@@ -72,7 +72,7 @@ async def create_upload_files(id: int, files: list[UploadFile]):
     for file in files:
         if file.filename:
             with open(
-                os.path.join(settings.DATA_DIR, folder.name, file.filename), "wb"
+                os.path.join(settings.FOLDERS_DIR, folder.name, file.filename), "wb"
             ) as new_file:
                 new_file.write(file.file.read())
 
@@ -86,7 +86,7 @@ async def download_file(id: int, filename: str):
     if not folder:
         return {"error": "folder not found."}
     return FileResponse(
-        path=os.path.join(settings.DATA_DIR, folder.name, filename),
+        path=os.path.join(settings.FOLDERS_DIR, folder.name, filename),
         filename=filename,
         media_type="application/octet-stream",
     )

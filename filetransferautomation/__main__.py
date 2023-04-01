@@ -7,7 +7,8 @@ import os
 import sys
 import threading
 import uuid
-
+import subprocess
+import pathlib
 from fastapi import FastAPI
 from scheduleplus.scheduler import Scheduler
 import uvicorn
@@ -112,24 +113,39 @@ def run_task(task: models.Task):
     downloaded_files = []
     for step in task.steps:
         if step.host and step.step_type == "source" and step.host.type:
-            # found_files = local_directory_transfer(task, step, work_directory)
             transfer = Transfer(
                 step.host.type, "download", task, step, work_directory, task_run_id
             )
             downloaded_files = transfer.run()
-    if downloaded_files:
-        for step in task.steps:
-            if step.step_type == "process":
-                if step.type == "rename":
-                    rename_process(task, step, work_directory)
-                elif step.type == "script":
-                    pass
-        for step in task.steps:
-            if step.host and step.step_type == "destination" and step.host.type:
-                transfer = Transfer(
-                    step.host.type, "upload", task, step, work_directory, task_run_id
+    for step in task.steps:
+        if step.step_type == "process" and step.process and step.process.script_file:
+            script_dir = pathlib.Path(settings.SCRIPTS_DIR).resolve()
+            work_dir = pathlib.Path(work_directory).resolve()
+            if step.process.per_file == 1:
+                for file in downloaded_files:
+                    subprocess.call(
+                        sys.executable
+                        + " "
+                        + os.path.join(script_dir, step.process.script_file)
+                        + " "
+                        + file.name,
+                        shell=True,
+                        cwd=work_dir,
+                    )
+            else:
+                subprocess.call(
+                    sys.executable
+                    + " "
+                    + os.path.join(script_dir, step.process.script_file),
+                    shell=True,
+                    cwd=work_dir,
                 )
-                transfer.run()
+    for step in task.steps:
+        if step.host and step.step_type == "destination" and step.host.type:
+            transfer = Transfer(
+                step.host.type, "upload", task, step, work_directory, task_run_id
+            )
+            transfer.run()
     os.rmdir(work_directory)
     logging.info(
         f"Task '{task.name}', id: {task.task_id}, task_id: {task_run_id} completed."

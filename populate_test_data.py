@@ -48,6 +48,10 @@ sql.append(
         step_id=2, task_id=1, host_id=2, file_mask="*.txt", step_type="destination"
     )
 )
+sql.append(models.Process(process_id=1, name="test", script_file="test.py"))
+sql.append(
+    models.Step(step_id=3, task_id=1, host_id=2, step_type="process", process_id=1)
+)
 sql.append(models.Task(task_id=1, name="test", description="", active=1))
 db.add_all(sql)
 db.commit()
