@@ -5,8 +5,6 @@ LABEL org.opencontainers.image.description="File Transport Automation"
 
 WORKDIR /app
 
-COPY pyproject.toml .
-
 COPY . /app
 
 RUN pip3.10 install -e .
