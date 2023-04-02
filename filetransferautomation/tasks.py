@@ -1,13 +1,86 @@
 """Tasks api and data."""
 from __future__ import annotations
 
+import logging
+import os
+import pathlib
+import subprocess
+import sys
+import threading
+import uuid
+
 from fastapi import APIRouter, HTTPException
 
-from filetransferautomation import models, shemas
+from filetransferautomation import models, settings, shemas, tasks
 from filetransferautomation.database import SessionLocal
+from filetransferautomation.logs import add_task_log_entry
 from filetransferautomation.models import Task
+from filetransferautomation.transfer import Transfer
 
 router = APIRouter()
+
+
+def run_task(task: models.Task):
+    """Run task."""
+    task_run_id = str(uuid.uuid4())
+    logging.info(
+        f"--- Running task '{task.name}', id: {task.task_id}, task_run_id: {task_run_id}, "
+        f"thread {threading.get_native_id()}."
+    )
+    add_task_log_entry(task_run_id, task.task_id, "running")
+    work_directory = os.path.join(settings.WORK_DIR, task_run_id)
+    os.mkdir(work_directory)
+    downloaded_files = []
+    for step in task.steps:
+        if step.host and step.step_type == "source" and step.host.type:
+            transfer = Transfer(
+                step.host.type, "download", task, step, work_directory, task_run_id
+            )
+            downloaded_files = transfer.run()
+    for step in task.steps:
+        if step.step_type == "process" and step.process and step.process.script_file:
+            script_dir = pathlib.Path(settings.SCRIPTS_DIR).resolve()
+            work_dir = pathlib.Path(work_directory).resolve()
+            if step.process.per_file == 1:
+                for file in downloaded_files:
+                    subprocess.call(
+                        sys.executable
+                        + " "
+                        + os.path.join(script_dir, step.process.script_file)
+                        + " "
+                        + file.name,
+                        shell=True,
+                        cwd=work_dir,
+                    )
+            else:
+                subprocess.call(
+                    sys.executable
+                    + " "
+                    + os.path.join(script_dir, step.process.script_file),
+                    shell=True,
+                    cwd=work_dir,
+                )
+    for step in task.steps:
+        if step.host and step.step_type == "destination" and step.host.type:
+            transfer = Transfer(
+                step.host.type, "upload", task, step, work_directory, task_run_id
+            )
+            transfer.run()
+    os.rmdir(work_directory)
+    logging.info(
+        f"Task '{task.name}', id: {task.task_id}, task_id: {task_run_id} completed."
+    )
+    logging.info(
+        f"--- Exiting task '{task.name}', id: {task.task_id}, task_run_id: {task_run_id}, "
+        f"thread {threading.get_native_id()}."
+    )
+    add_task_log_entry(task_run_id, task.task_id, "success")
+
+
+def run_task_threaded(task: tasks.Task):
+    """Run task in thread."""
+    new_thread = threading.Thread(target=run_task, args=(task,))
+    new_thread.start()
 
 
 @router.get("/{task_id}")
@@ -96,4 +169,15 @@ async def delete_schedule(task_id: int, schedule_id: int):
     if db_schedule:
         db_schedule.delete()
         db.commit()
+    return None
+
+
+@router.post("/{task_id}/run")
+async def run_task_now(task_id: int):
+    """Run a task."""
+    db = SessionLocal()
+    db_task = db.query(models.Task).filter(models.Task.task_id == task_id).one_or_none()
+    if not db_task:
+        raise HTTPException(status_code=404, detail="task not found")
+    run_task_threaded(db_task)
     return None

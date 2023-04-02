@@ -20,11 +20,14 @@ dependencies = [
     "sqlalchemy==2.0.7",
 ]
 
+[project.scripts]
+file-transfer-automation = "filetransferautomation.__main__:main"
+
 [project.optional-dependencies]
 test = ["ruff"]
 
-[tool.setuptools]
-packages = ["filetransferautomation"]
+[tool.setuptools.packages.find]
+include = ["homeassistant*"]
 
 [tool.ruff]
 target-version = "py310"

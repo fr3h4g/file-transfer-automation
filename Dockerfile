@@ -7,12 +7,12 @@ WORKDIR /app
 
 COPY pyproject.toml .
 
-COPY ./filetransferautomation /app/filetransferautomation
+COPY . /app
 
-RUN pip3.10 install .
+RUN pip3.10 install -e .
 
 RUN mkdir /data /data/work /data/folders /data/scripts
 
 COPY ./data/scripts /data/scripts
 
-CMD [ "python" ,"-m", "filetransferautomation" ]
+CMD [ "file-transfer-automation" ]

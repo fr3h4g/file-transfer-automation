@@ -1,14 +1,12 @@
 """Start File Transfer Automation."""
 from __future__ import annotations
+import argparse
 
 import asyncio
 import logging
 import os
 import sys
-import threading
-import uuid
-import subprocess
-import pathlib
+
 from fastapi import FastAPI
 from scheduleplus.scheduler import Scheduler
 import uvicorn
@@ -23,8 +21,6 @@ from filetransferautomation import (
     tasks,
 )
 from filetransferautomation.common import compare_filter
-from filetransferautomation.logs import add_task_log_entry
-from filetransferautomation.transfer import Transfer
 
 from . import models
 from .database import engine
@@ -101,70 +97,7 @@ def rename_process(task: tasks.Task, step: models.Step, work_directory: str):
             files_renamed.append(filename)
 
 
-def run_task(task: models.Task):
-    """Run task."""
-    task_run_id = str(uuid.uuid4())
-    logging.info(
-        f"--- Running task '{task.name}', id: {task.task_id}, task_run_id: {task_run_id}, "
-        f"thread {threading.get_native_id()}."
-    )
-    add_task_log_entry(task_run_id, task.task_id, "running")
-    work_directory = os.path.join(settings.WORK_DIR, task_run_id)
-    os.mkdir(work_directory)
-    downloaded_files = []
-    for step in task.steps:
-        if step.host and step.step_type == "source" and step.host.type:
-            transfer = Transfer(
-                step.host.type, "download", task, step, work_directory, task_run_id
-            )
-            downloaded_files = transfer.run()
-    for step in task.steps:
-        if step.step_type == "process" and step.process and step.process.script_file:
-            script_dir = pathlib.Path(settings.SCRIPTS_DIR).resolve()
-            work_dir = pathlib.Path(work_directory).resolve()
-            if step.process.per_file == 1:
-                for file in downloaded_files:
-                    subprocess.call(
-                        sys.executable
-                        + " "
-                        + os.path.join(script_dir, step.process.script_file)
-                        + " "
-                        + file.name,
-                        shell=True,
-                        cwd=work_dir,
-                    )
-            else:
-                subprocess.call(
-                    sys.executable
-                    + " "
-                    + os.path.join(script_dir, step.process.script_file),
-                    shell=True,
-                    cwd=work_dir,
-                )
-    for step in task.steps:
-        if step.host and step.step_type == "destination" and step.host.type:
-            transfer = Transfer(
-                step.host.type, "upload", task, step, work_directory, task_run_id
-            )
-            transfer.run()
-    os.rmdir(work_directory)
-    logging.info(
-        f"Task '{task.name}', id: {task.task_id}, task_id: {task_run_id} completed."
-    )
-    logging.info(
-        f"--- Exiting task '{task.name}', id: {task.task_id}, task_run_id: {task_run_id}, "
-        f"thread {threading.get_native_id()}."
-    )
-    add_task_log_entry(task_run_id, task.task_id, "success")
-
-
-def run_task_threaded(task: tasks.Task):
-    """Run task in thread."""
-    new_thread = threading.Thread(target=run_task, args=(task,))
-    new_thread.start()
-
-
-async def main() -> None:
+async def run_schedules() -> None:
     """Run all schedules."""
     while True:
         await asyncio.to_thread(scheduler.run_function_jobs)
@@ -189,15 +122,47 @@ def startup():
             for schedule in task.schedules:
                 if not settings.DEV_MODE:
                     scheduler.cron(str(schedule.cron)).do_function(
-                        run_task_threaded, task
+                        tasks.run_task_threaded, task
                     )
                 if settings.DEV_MODE:
-                    run_task_threaded(task)
+                    tasks.run_task_threaded(task)
 
-    asyncio.ensure_future(main())
+    asyncio.ensure_future(run_schedules())
+
+
+def get_arguments() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="File Transfer Automation: Managed File Transfers made easy.",
+    )
+
+    parser.add_argument(
+        "-p",
+        "--port",
+        help="Port for REST api to listen on, default 8080",
+        default=8080,
+    )
+
+    arguments = parser.parse_args()
+
+    return arguments
+
+
+def main():
+    args = get_arguments()
+
+    print(args)
+
+    reload = False
+    if settings.DEV_MODE:
+        reload = True
+
+    uvicorn.run(
+        "filetransferautomation.__main__:app",
+        host="0.0.0.0",
+        port=args.port,
+        reload=reload,
+    )
 
 
 if __name__ == "__main__":
-    uvicorn.run(
-        "filetransferautomation.__main__:app", host="0.0.0.0", port=8080, reload=True
-    )
+    main()
