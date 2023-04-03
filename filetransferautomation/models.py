@@ -18,18 +18,18 @@ class FileLog(Base):
     filelog_id: Mapped[int] = mapped_column(
         Integer, primary_key=True, index=True, unique=True, autoincrement=True
     )
-    task_run_id: Mapped[str] = mapped_column(String)
+    task_run_id: Mapped[str] = mapped_column(String(50))
     task_id: Mapped[int] = mapped_column(Integer, ForeignKey("tasks.task_id"))
     step_id: Mapped[int] = mapped_column(Integer, ForeignKey("steps.step_id"))
     timestamp: Mapped[datetime.datetime] = mapped_column(
         DateTime, default=datetime.datetime.now()
     )
-    file_id: Mapped[str] = mapped_column(String)
-    file_name: Mapped[str] = mapped_column(String)
+    file_id: Mapped[str] = mapped_column(String(50))
+    file_name: Mapped[str] = mapped_column(String(255))
     size: Mapped[int] = mapped_column(Integer)
-    status: Mapped[str] = mapped_column(String)
+    status: Mapped[str] = mapped_column(String(30))
     duration_sec: Mapped[float | None] = mapped_column(Float, default=None)
-    transfer_speed: Mapped[str | None] = mapped_column(String, default=None)
+    transfer_speed: Mapped[str | None] = mapped_column(String(50), default=None)
 
 
 class TaskLog(Base):
@@ -41,14 +41,14 @@ class TaskLog(Base):
         Integer, primary_key=True, index=True, unique=True, autoincrement=True
     )
     task_id: Mapped[int] = mapped_column(Integer, ForeignKey("tasks.task_id"))
-    task_run_id: Mapped[str] = mapped_column(String)
+    task_run_id: Mapped[str] = mapped_column(String(50))
     start_time: Mapped[datetime.datetime] = mapped_column(DateTime)
     end_time: Mapped[datetime.datetime] = mapped_column(
         DateTime, nullable=True, default=None
     )
     status: Mapped[
         Literal["running"] | Literal["error"] | Literal["success"]
-    ] = mapped_column(String)
+    ] = mapped_column(String(30))
     duration_sec: Mapped[float | None] = mapped_column(Float, default=None)
 
 
@@ -61,7 +61,7 @@ class Schedule(Base):
         Integer, primary_key=True, index=True, unique=True, autoincrement=True
     )
     task_id: Mapped[int] = mapped_column(Integer, ForeignKey("tasks.task_id"))
-    cron: Mapped[str] = mapped_column(String)
+    cron: Mapped[str] = mapped_column(String(255))
 
     def __repr__(self):
         """Table repr."""
@@ -76,8 +76,8 @@ class Task(Base):
     task_id: Mapped[int] = mapped_column(
         Integer, primary_key=True, index=True, unique=True, autoincrement=True
     )
-    name: Mapped[str] = mapped_column(String)
-    description: Mapped[str] = mapped_column(String)
+    name: Mapped[str] = mapped_column(String(100))
+    description: Mapped[str] = mapped_column(String(255))
     active: Mapped[int] = mapped_column(Integer)
     schedules: Mapped[list[Schedule]] = relationship(lazy="selectin")
     steps: Mapped[list[Step]] = relationship(lazy="selectin")
@@ -98,11 +98,11 @@ class Step(Base):
     task_id: Mapped[int] = mapped_column(Integer, ForeignKey("tasks.task_id"))
     step_type: Mapped[
         Literal["source"] | Literal["process"] | Literal["destination"]
-    ] = mapped_column(String)
-    file_mask: Mapped[str | None] = mapped_column(String, default=None)
-    filename: Mapped[str | None] = mapped_column(String, default=None)
+    ] = mapped_column(String(50))
+    file_mask: Mapped[str | None] = mapped_column(String(255), default=None)
+    filename: Mapped[str | None] = mapped_column(String(255), default=None)
     run_per_file: Mapped[bool | None] = mapped_column(Boolean, default=None)
-    name: Mapped[str | None] = mapped_column(String, default=None)
+    name: Mapped[str | None] = mapped_column(String(100), default=None)
     max_file_count: Mapped[int | None] = mapped_column(Integer, default=None)
     host_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("hosts.host_id"), default=None
@@ -126,9 +126,9 @@ class Process(Base):
     process_id: Mapped[int] = mapped_column(
         Integer, primary_key=True, index=True, unique=True, autoincrement=True
     )
-    name: Mapped[str | None] = mapped_column(String, default=None)
-    script_file: Mapped[str | None] = mapped_column(String, default=None)
-    per_file: Mapped[int] = mapped_column(String, default=0)
+    name: Mapped[str | None] = mapped_column(String(100), default=None)
+    script_file: Mapped[str | None] = mapped_column(String(100), default=None)
+    per_file: Mapped[int] = mapped_column(Integer, default=0)
 
 
 class Host(Base):
@@ -139,12 +139,12 @@ class Host(Base):
     host_id: Mapped[int] = mapped_column(
         Integer, primary_key=True, index=True, unique=True, autoincrement=True
     )
-    name: Mapped[str] = mapped_column(String)
+    name: Mapped[str] = mapped_column(String(100))
     type: Mapped[Literal["local_directory"] | Literal["unc_share"]] = mapped_column(
-        String, default=None
+        String(50), default=None
     )
-    directory: Mapped[str | None] = mapped_column(String, default=None)
-    share: Mapped[str | None] = mapped_column(String, default=None)
-    username: Mapped[str | None] = mapped_column(String, default=None)
-    password: Mapped[str | None] = mapped_column(String, default=None)
-    description: Mapped[str | None] = mapped_column(String, default=None)
+    directory: Mapped[str | None] = mapped_column(String(255), default=None)
+    share: Mapped[str | None] = mapped_column(String(255), default=None)
+    username: Mapped[str | None] = mapped_column(String(100), default=None)
+    password: Mapped[str | None] = mapped_column(String(100), default=None)
+    description: Mapped[str | None] = mapped_column(String(255), default=None)

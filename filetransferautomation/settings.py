@@ -22,3 +22,5 @@ DATABASE_URL = f"sqlite:///{DATA_DIR}/file-transfer-automation.db"
 
 if DEV_MODE:
     DATABASE_URL = "sqlite:///test.db"
+
+DATABASE_URL = str(os.getenv("DATABASE_URL", DATABASE_URL))
