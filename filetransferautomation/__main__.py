@@ -121,9 +121,12 @@ async def startup():
         if task.active:
             for schedule in task.schedules:
                 if not settings.DEV_MODE:
-                    scheduler.cron(str(schedule.cron)).do_function(
-                        tasks.run_task_threaded, task
-                    )
+                    job = scheduler.cron(str(schedule.cron))
+                    if job._id:
+                        await schedules.update_schedule_job_id(
+                            schedule.schedule_id, job._id
+                        )
+                    job.do_function(tasks.run_task_threaded, task)
                 if settings.DEV_MODE:
                     tasks.run_task_threaded(task)
 

@@ -75,3 +75,16 @@ async def update_schedule(schedule_id: int, schedule: shemas.AddSchedule):
         )
         return db_schedule
     return None
+
+
+async def update_schedule_job_id(schedule_id: int, scheduler_job_id: int):
+    """Update a schedule and set scheduler_job_id."""
+    db = SessionLocal()
+    db_schedule = (
+        db.query(Schedule).filter(Schedule.schedule_id == schedule_id).one_or_none()
+    )
+    if db_schedule:
+        db_schedule.scheduler_job_id = scheduler_job_id
+        db.commit()
+        return db_schedule
+    return None

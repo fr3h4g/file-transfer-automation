@@ -63,6 +63,8 @@ class Schedule(Base):
     task_id: Mapped[int] = mapped_column(Integer)
     cron: Mapped[str] = mapped_column(String(255))
 
+    scheduler_job_id: Mapped[int | None] = mapped_column(Integer, default=None)
+
     def __repr__(self):
         """Table repr."""
         return f"Schedule({self.schedule_id!r}, {self.task_id!r}, {self.cron!r})"
