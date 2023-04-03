@@ -1,7 +1,7 @@
 """Start File Transfer Automation."""
 from __future__ import annotations
-import argparse
 
+import argparse
 import asyncio
 import logging
 import os
@@ -105,7 +105,7 @@ async def run_schedules() -> None:
 
 
 @app.on_event("startup")
-def startup():
+async def startup():
     """Start File Transfer Automation."""
 
     models.Base.metadata.create_all(bind=engine)
@@ -115,7 +115,7 @@ def startup():
     logging.info(f"{len(folders_data)} folders loaded.")
 
     logging.info("Loading tasks.")
-    tasks_data = tasks.get_active_tasks()
+    tasks_data = await tasks.get_active_tasks()
     logging.info(f"{len(tasks_data)} tasks loaded.")
     for task in tasks_data:
         if task.active:

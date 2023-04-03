@@ -4,8 +4,8 @@ from __future__ import annotations
 import datetime
 from typing import Literal
 
-from sqlalchemy import Boolean, DateTime, Float, Integer, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .database import Base
 
@@ -19,8 +19,8 @@ class FileLog(Base):
         Integer, primary_key=True, index=True, unique=True, autoincrement=True
     )
     task_run_id: Mapped[str] = mapped_column(String(50))
-    task_id: Mapped[int] = mapped_column(Integer)
-    step_id: Mapped[int] = mapped_column(Integer)
+    task_id: Mapped[int] = mapped_column(Integer, ForeignKey("tasks.task_id"))
+    step_id: Mapped[int] = mapped_column(Integer, ForeignKey("steps.step_id"))
     timestamp: Mapped[datetime.datetime] = mapped_column(
         DateTime, default=datetime.datetime.now()
     )
@@ -40,7 +40,7 @@ class TaskLog(Base):
     joblog_id: Mapped[int] = mapped_column(
         Integer, primary_key=True, index=True, unique=True, autoincrement=True
     )
-    task_id: Mapped[int] = mapped_column(Integer)
+    task_id: Mapped[int] = mapped_column(Integer, ForeignKey("tasks.task_id"))
     task_run_id: Mapped[str] = mapped_column(String(50))
     start_time: Mapped[datetime.datetime] = mapped_column(DateTime)
     end_time: Mapped[datetime.datetime] = mapped_column(
@@ -60,7 +60,7 @@ class Schedule(Base):
     schedule_id: Mapped[int] = mapped_column(
         Integer, primary_key=True, index=True, unique=True, autoincrement=True
     )
-    task_id: Mapped[int] = mapped_column(Integer)
+    task_id: Mapped[int] = mapped_column(Integer, ForeignKey("tasks.task_id"))
     cron: Mapped[str] = mapped_column(String(255))
 
     def __repr__(self):
@@ -79,6 +79,8 @@ class Task(Base):
     name: Mapped[str] = mapped_column(String(100))
     description: Mapped[str] = mapped_column(String(255))
     active: Mapped[int] = mapped_column(Integer)
+    schedules: Mapped[list[Schedule]] = relationship(lazy="selectin")
+    steps: Mapped[list[Step]] = relationship(lazy="selectin")
 
     def __repr__(self):
         """Table repr."""
@@ -93,7 +95,7 @@ class Step(Base):
     step_id: Mapped[int] = mapped_column(
         Integer, primary_key=True, index=True, unique=True, autoincrement=True
     )
-    task_id: Mapped[int] = mapped_column(Integer)
+    task_id: Mapped[int] = mapped_column(Integer, ForeignKey("tasks.task_id"))
     step_type: Mapped[
         Literal["source"] | Literal["process"] | Literal["destination"]
     ] = mapped_column(String(50))
@@ -102,8 +104,14 @@ class Step(Base):
     run_per_file: Mapped[bool | None] = mapped_column(Boolean, default=None)
     name: Mapped[str | None] = mapped_column(String(100), default=None)
     max_file_count: Mapped[int | None] = mapped_column(Integer, default=None)
-    host_id: Mapped[int | None] = mapped_column(Integer, default=None)
-    process_id: Mapped[int | None] = mapped_column(Integer, default=None)
+    host_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("hosts.host_id"), default=None
+    )
+    host: Mapped[Host] = relationship(lazy="selectin")
+    process_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("processes.process_id"), default=None
+    )
+    process: Mapped[Process | None] = relationship(lazy="selectin")
 
     def __repr__(self):
         """Table repr."""

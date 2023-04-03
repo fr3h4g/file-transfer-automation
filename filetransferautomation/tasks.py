@@ -13,8 +13,10 @@ from fastapi import APIRouter, HTTPException
 
 from filetransferautomation import models, settings, shemas, tasks
 from filetransferautomation.database import SessionLocal
+from filetransferautomation.hosts import get_host
 from filetransferautomation.logs import add_task_log_entry
 from filetransferautomation.models import Task
+from filetransferautomation.steps import get_process
 from filetransferautomation.transfer import Transfer
 
 router = APIRouter()
@@ -84,20 +86,25 @@ def run_task_threaded(task: tasks.Task):
 
 
 @router.get("/{task_id}")
-def get_task(task_id: int):
+async def get_task(task_id: int):
     """Get a task."""
     db = SessionLocal()
     db_task = db.query(models.Task).filter(models.Task.task_id == task_id).one_or_none()
     if not db_task:
         raise HTTPException(status_code=404, detail="task not found")
+    db_task.schedules = await get_task_schedules(db_task.task_id)
+    db_task.steps = await get_task_steps(db_task.task_id)
     return db_task
 
 
 @router.get("/active")
-def get_active_tasks():
+async def get_active_tasks():
     """Get all active tasks."""
     db = SessionLocal()
     result = db.query(models.Task).filter(models.Task.active == 1).all()
+    for row in result:
+        row.schedules = await get_task_schedules(row.task_id)
+        row.steps = await get_task_steps(row.task_id)
     return result
 
 
@@ -106,6 +113,9 @@ async def get_tasks():
     """Get all tasks."""
     db = SessionLocal()
     result = db.query(models.Task).all()
+    for row in result:
+        row.schedules = await get_task_schedules(row.task_id)
+        row.steps = await get_task_steps(row.task_id)
     return result
 
 
@@ -148,8 +158,21 @@ async def delete_task(task_id: int):
     return None
 
 
+@router.get("/{task_id}/steps")
+async def get_task_steps(task_id: int):
+    """Get all tasks steps."""
+    db = SessionLocal()
+    result = db.query(models.Step).filter(models.Step.task_id == task_id).all()
+    for row in result:
+        if row.host_id:
+            row.host = get_host(row.host_id)
+        if row.process_id:
+            row.process = get_process(row.process_id)
+    return result
+
+
 @router.get("/{task_id}/schedules")
-def get_task_schedules(task_id: int):
+async def get_task_schedules(task_id: int):
     """Get a tasks schedules."""
     db = SessionLocal()
     db_task = db.query(models.Schedule).filter(models.Schedule.task_id == task_id).all()
@@ -175,8 +198,7 @@ async def delete_schedule(task_id: int, schedule_id: int):
 @router.post("/{task_id}/run")
 async def run_task_now(task_id: int):
     """Run a task."""
-    db = SessionLocal()
-    db_task = db.query(models.Task).filter(models.Task.task_id == task_id).one_or_none()
+    db_task = await get_task(task_id)
     if not db_task:
         raise HTTPException(status_code=404, detail="task not found")
     run_task_threaded(db_task)
