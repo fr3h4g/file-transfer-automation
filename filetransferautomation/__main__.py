@@ -131,6 +131,7 @@ def startup():
 
 
 def get_arguments() -> argparse.Namespace:
+    """Get CLI arguments."""
     parser = argparse.ArgumentParser(
         description="File Transfer Automation: Managed File Transfers made easy.",
     )
@@ -148,9 +149,8 @@ def get_arguments() -> argparse.Namespace:
 
 
 def main():
+    """Startup."""
     args = get_arguments()
-
-    print(args)
 
     reload = False
     if settings.DEV_MODE:
