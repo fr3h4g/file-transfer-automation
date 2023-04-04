@@ -40,10 +40,10 @@ class ProtocolBase:
 
     def run(self) -> list[File]:
         """Run base class."""
-        logging.info(f"Connecting to '{self._step.name}'.")
+        logging.info(f"Connecting to '{self._step.host.name}'.")
         connected = self._connect()
         if not connected:
-            logging.error(f"Can't connect to '{self._step.name}'.")
+            logging.error(f"Can't connect to '{self._step.host.name}'.")
             return []
 
         get_files_out = []
@@ -150,7 +150,7 @@ class ProtocolBase:
             logging.info("No files found to retrieve.")
 
         self._disconnect_from_remote()
-        logging.info(f"Disconnected from '{self._step.name}'.")
+        logging.info(f"Disconnected from '{self._step.host.name}'.")
 
         return done_files
 
