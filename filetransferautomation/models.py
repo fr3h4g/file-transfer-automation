@@ -4,7 +4,7 @@ from __future__ import annotations
 import datetime
 from typing import Literal
 
-from sqlalchemy import Boolean, DateTime, Float, Integer, String
+from sqlalchemy import DateTime, Float, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .database import Base
@@ -95,34 +95,28 @@ class Step(Base):
     step_id: Mapped[int] = mapped_column(
         Integer, primary_key=True, index=True, unique=True, autoincrement=True
     )
+    sort_order: Mapped[int] = mapped_column(Integer)
     task_id: Mapped[int] = mapped_column(Integer)
-    step_type: Mapped[
-        Literal["source"] | Literal["process"] | Literal["destination"]
-    ] = mapped_column(String(50))
-    file_mask: Mapped[str | None] = mapped_column(String(255), default=None)
-    filename: Mapped[str | None] = mapped_column(String(255), default=None)
-    run_per_file: Mapped[bool | None] = mapped_column(Boolean, default=None)
-    name: Mapped[str | None] = mapped_column(String(100), default=None)
-    max_file_count: Mapped[int | None] = mapped_column(Integer, default=None)
     host_id: Mapped[int | None] = mapped_column(Integer, default=None)
-    process_id: Mapped[int | None] = mapped_column(Integer, default=None)
+    script: Mapped[str | None] = mapped_column(String(100), default=None)
+    arguments: Mapped[str | None] = mapped_column(String(255), default=None)
 
     def __repr__(self):
         """Table repr."""
         return f"Step({self.step_id}, ...)"
 
 
-class Process(Base):
-    """Table processes model."""
+# class Process(Base):
+#     """Table processes model."""
 
-    __tablename__ = "processes"
+#     __tablename__ = "processes"
 
-    process_id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, index=True, unique=True, autoincrement=True
-    )
-    name: Mapped[str | None] = mapped_column(String(100), default=None)
-    script_file: Mapped[str | None] = mapped_column(String(100), default=None)
-    per_file: Mapped[int] = mapped_column(Integer, default=0)
+#     process_id: Mapped[int] = mapped_column(
+#         Integer, primary_key=True, index=True, unique=True, autoincrement=True
+#     )
+#     name: Mapped[str | None] = mapped_column(String(100), default=None)
+#     script_file: Mapped[str | None] = mapped_column(String(100), default=None)
+#     per_file: Mapped[int] = mapped_column(Integer, default=0)
 
 
 class Host(Base):

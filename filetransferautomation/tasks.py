@@ -16,13 +16,42 @@ from filetransferautomation.database import SessionLocal
 from filetransferautomation.hosts import get_host
 from filetransferautomation.logs import add_task_log_entry
 from filetransferautomation.models import Task
-from filetransferautomation.steps import get_process
+from filetransferautomation.plugin_collection import PluginCollection
 from filetransferautomation.transfer import Transfer
 
 router = APIRouter()
 
 
 def run_task(task: models.Task):
+    """Run task."""
+    workspace_id = str(uuid.uuid4())
+    logging.info(
+        f"--- Running task '{task.name}', id: {task.task_id}, task_run_id: {workspace_id}, "
+        f"thread {threading.get_native_id()}."
+    )
+    add_task_log_entry(workspace_id, task.task_id, "running")
+
+    step_plugins = PluginCollection("filetransferautomation.step_plugins")
+
+    variables = {"workspace_id": workspace_id}
+
+    for step in task.steps:
+        for plugin in step_plugins.plugins:
+            if step.script.lower() == plugin.name.lower():
+                tmp = plugin(step.arguments, variables)
+                tmp.process()
+
+    logging.info(
+        f"Task '{task.name}', id: {task.task_id}, task_id: {workspace_id} completed."
+    )
+    logging.info(
+        f"--- Exiting task '{task.name}', id: {task.task_id}, task_run_id: {workspace_id}, "
+        f"thread {threading.get_native_id()}."
+    )
+    add_task_log_entry(workspace_id, task.task_id, "success")
+
+
+def run_task_old(task: models.Task):
     """Run task."""
     task_run_id = str(uuid.uuid4())
     logging.info(
@@ -162,12 +191,15 @@ async def delete_task(task_id: int):
 async def get_task_steps(task_id: int):
     """Get all tasks steps."""
     db = SessionLocal()
-    result = db.query(models.Step).filter(models.Step.task_id == task_id).all()
+    result = (
+        db.query(models.Step)
+        .filter(models.Step.task_id == task_id)
+        .order_by(models.Step.sort_order)
+        .all()
+    )
     for row in result:
         if row.host_id:
             row.host = get_host(row.host_id)
-        if row.process_id:
-            row.process = get_process(row.process_id)
     return result
 
 

@@ -35,6 +35,7 @@ async def load_jobs():
                         schedule.schedule_id, job._id
                     )
                 job.do_function(tasks.run_task_threaded, task)
+                tasks.run_task_threaded(task)
 
 
 @router.get("")
