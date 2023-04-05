@@ -18,25 +18,9 @@ def get_step(step_id: int) -> models.Step | None:
         db_step.host = (
             db.query(models.Host).filter(models.Host.host_id == db_step.host_id).all()
         )
-        db_step.process = (
-            db.query(models.Process)
-            .filter(models.Process.process_id == db_step.process_id)
-            .all()
-        )
     if not db_step:
         raise HTTPException(status_code=404, detail="step not found")
     return db_step
-
-
-def get_process(process_id: int):
-    """Get a process by id."""
-    db = SessionLocal()
-    db_process = (
-        db.query(models.Process)
-        .filter(models.Process.process_id == process_id)
-        .one_or_none()
-    )
-    return db_process
 
 
 @router.get("/active")

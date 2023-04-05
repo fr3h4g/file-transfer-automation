@@ -3,9 +3,6 @@ from __future__ import annotations
 
 import logging
 import os
-import pathlib
-import subprocess
-import sys
 import threading
 import uuid
 
@@ -17,7 +14,7 @@ from filetransferautomation.hosts import get_host
 from filetransferautomation.logs import add_task_log_entry
 from filetransferautomation.models import Task
 from filetransferautomation.plugin_collection import PluginCollection
-from filetransferautomation.transfer import Transfer
+
 
 router = APIRouter()
 
@@ -25,6 +22,7 @@ router = APIRouter()
 def run_task(task: models.Task):
     """Run task."""
     workspace_id = str(uuid.uuid4())
+
     logging.info(
         f"--- Running task '{task.name}', id: {task.task_id}, task_run_id: {workspace_id}, "
         f"thread {threading.get_native_id()}."
@@ -33,79 +31,38 @@ def run_task(task: models.Task):
 
     step_plugins = PluginCollection("filetransferautomation.step_plugins")
 
-    variables = {"workspace_id": workspace_id}
+    variables = {
+        "task_id": task.task_id,
+        "task_name": task.name,
+        "workspace_id": workspace_id,
+        "workspace_directory": os.path.join(settings.WORK_DIR, workspace_id),
+    }
 
     for step in task.steps:
+        variables = {**variables, "step_id": step.step_id}
+        plugin_found = False
         for plugin in step_plugins.plugins:
-            if step.script.lower() == plugin.name.lower():
+            if step.active == 0:
+                logging.info(
+                    f"Step is not active. Skipping step, step_id: {step.step_id}, "
+                    f"script: {plugin.name.lower()}"
+                )
+            elif step.script.lower() == plugin.name.lower():
+                plugin_found = True
                 tmp = plugin(step.arguments, variables)
                 tmp.process()
+                variables = tmp.variables
+        if not plugin_found:
+            raise ValueError(f"Plugin script '{step.script.lower()}' not found.")
 
     logging.info(
-        f"Task '{task.name}', id: {task.task_id}, task_id: {workspace_id} completed."
+        f"Task '{task.name}', id: {task.task_id}, task_run_id: {workspace_id} completed."
     )
     logging.info(
         f"--- Exiting task '{task.name}', id: {task.task_id}, task_run_id: {workspace_id}, "
         f"thread {threading.get_native_id()}."
     )
     add_task_log_entry(workspace_id, task.task_id, "success")
-
-
-def run_task_old(task: models.Task):
-    """Run task."""
-    task_run_id = str(uuid.uuid4())
-    logging.info(
-        f"--- Running task '{task.name}', id: {task.task_id}, task_run_id: {task_run_id}, "
-        f"thread {threading.get_native_id()}."
-    )
-    add_task_log_entry(task_run_id, task.task_id, "running")
-    work_directory = os.path.join(settings.WORK_DIR, task_run_id)
-    os.mkdir(work_directory)
-    downloaded_files = []
-    for step in task.steps:
-        if step.host and step.step_type == "source" and step.host.type:
-            transfer = Transfer(
-                step.host.type, "download", task, step, work_directory, task_run_id
-            )
-            downloaded_files = transfer.run()
-    for step in task.steps:
-        if step.step_type == "process" and step.process and step.process.script_file:
-            script_dir = pathlib.Path(settings.SCRIPTS_DIR).resolve()
-            work_dir = pathlib.Path(work_directory).resolve()
-            if step.process.per_file == 1:
-                for file in downloaded_files:
-                    subprocess.call(
-                        sys.executable
-                        + " "
-                        + os.path.join(script_dir, step.process.script_file)
-                        + " "
-                        + file.name,
-                        shell=True,
-                        cwd=work_dir,
-                    )
-            else:
-                subprocess.call(
-                    sys.executable
-                    + " "
-                    + os.path.join(script_dir, step.process.script_file),
-                    shell=True,
-                    cwd=work_dir,
-                )
-    for step in task.steps:
-        if step.host and step.step_type == "destination" and step.host.type:
-            transfer = Transfer(
-                step.host.type, "upload", task, step, work_directory, task_run_id
-            )
-            transfer.run()
-    os.rmdir(work_directory)
-    logging.info(
-        f"Task '{task.name}', id: {task.task_id}, task_id: {task_run_id} completed."
-    )
-    logging.info(
-        f"--- Exiting task '{task.name}', id: {task.task_id}, task_run_id: {task_run_id}, "
-        f"thread {threading.get_native_id()}."
-    )
-    add_task_log_entry(task_run_id, task.task_id, "success")
 
 
 def run_task_threaded(task: tasks.Task):

@@ -100,6 +100,7 @@ class Step(Base):
     host_id: Mapped[int | None] = mapped_column(Integer, default=None)
     script: Mapped[str | None] = mapped_column(String(100), default=None)
     arguments: Mapped[str | None] = mapped_column(String(255), default=None)
+    active: Mapped[int] = mapped_column(Integer, default=1)
 
     def __repr__(self):
         """Table repr."""

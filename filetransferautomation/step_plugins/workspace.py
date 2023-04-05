@@ -10,7 +10,13 @@ from filetransferautomation.plugin_collection import Plugin
 class WorkspaceInput(BaseModel):
     """Input data model."""
 
-    workspace_id: str
+    ...
+
+
+class WorkspaceOutput(BaseModel):
+    """Output data model."""
+
+    ...
 
 
 class CreateWorkspace(Plugin):
@@ -18,14 +24,16 @@ class CreateWorkspace(Plugin):
 
     name = "create_workspace"
     input_model = WorkspaceInput
-    output_model = None
+    output_model = WorkspaceOutput
     arguments = input_model
 
     def process(self):
         """Create workspace."""
-        work_directory = os.path.join(settings.WORK_DIR, self.arguments.workspace_id)
+        work_directory = os.path.join(
+            settings.WORK_DIR, self.get_variable("workspace_id")
+        )
         os.mkdir(work_directory)
-        print("created workspace", self.arguments.workspace_id)
+        print("created workspace", self.get_variable("workspace_id"))
 
 
 class DeleteWorkspace(Plugin):
@@ -33,10 +41,13 @@ class DeleteWorkspace(Plugin):
 
     name = "delete_workspace"
     input_model = WorkspaceInput
+    output_model = WorkspaceOutput
     arguments = input_model
 
     def process(self):
         """Delete workspace."""
-        work_directory = os.path.join(settings.WORK_DIR, self.arguments.workspace_id)
+        work_directory = os.path.join(
+            settings.WORK_DIR, self.get_variable("workspace_id")
+        )
         os.rmdir(work_directory)
-        print("deleted workspace", self.arguments.workspace_id)
+        print("deleted workspace", self.get_variable("workspace_id"))
