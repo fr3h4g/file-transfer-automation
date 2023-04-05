@@ -15,7 +15,6 @@ from filetransferautomation.logs import add_task_log_entry
 from filetransferautomation.models import Task
 from filetransferautomation.plugin_collection import PluginCollection
 
-
 router = APIRouter()
 
 
