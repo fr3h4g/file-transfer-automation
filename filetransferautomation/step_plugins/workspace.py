@@ -1,6 +1,6 @@
 """Workspace plugin."""
 import os
-
+import shutil
 from pydantic import BaseModel
 
 from filetransferautomation import settings
@@ -47,5 +47,7 @@ class Delete(Plugin):
         work_directory = os.path.join(
             settings.WORK_DIR, self.get_variable("workspace_id")
         )
-        os.rmdir(work_directory)
+
+        shutil.rmtree(work_directory)
+
         print("deleted workspace", self.get_variable("workspace_id"))

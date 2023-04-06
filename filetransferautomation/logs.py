@@ -51,8 +51,11 @@ def add_file_log_entry(
     task_run_id: str,
     task_id: int,
     step_id: int,
-    file: File,
+    filename: File,
     status: str,
+    filesize: int | None = None,
+    duration_sec: float | None = None,
+    bytes_per_sec: float | None = None,
 ):
     """Add file log entry."""
     timestamp = datetime.datetime.now()
@@ -62,26 +65,16 @@ def add_file_log_entry(
             task_id=task_id,
             step_id=step_id,
             status=status,
-            file_id=file.file_id,
-            file_name=file.name.removesuffix(".processing"),
-            size=file.size,
+            file_name=filename,
+            size=filesize,
             timestamp=timestamp,
         )
-        if status in ("uploaded", "downloaded"):
-            get_status = "uploading" if status == "uploaded" else "downloading"
-            db_file_start = (
-                db.query(FileLog)
-                .filter(FileLog.file_id == file.file_id, FileLog.status == get_status)
-                .one_or_none()
-            )
-            if db_file_start:
-                db_file_log.duration_sec = (
-                    timestamp - db_file_start.timestamp
-                ).total_seconds()
-                if file.size:
-                    db_file_log.transfer_speed = (
-                        str(round(file.size / db_file_log.duration_sec)) + " Bytes/sec"
-                    )
+        if filesize:
+            db_file_log.size = filesize
+        if duration_sec:
+            db_file_log.duration_sec = duration_sec
+        if bytes_per_sec:
+            db_file_log.bytes_per_sec = bytes_per_sec
         db.add(db_file_log)
         db.commit()
 

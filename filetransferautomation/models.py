@@ -4,7 +4,7 @@ from __future__ import annotations
 import datetime
 from typing import Literal
 
-from sqlalchemy import DateTime, Float, Integer, String
+from sqlalchemy import BigInteger, DateTime, Float, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .database import Base
@@ -24,12 +24,11 @@ class FileLog(Base):
     timestamp: Mapped[datetime.datetime] = mapped_column(
         DateTime, default=datetime.datetime.now()
     )
-    file_id: Mapped[str] = mapped_column(String(50))
     file_name: Mapped[str] = mapped_column(String(255))
-    size: Mapped[int] = mapped_column(Integer)
+    size: Mapped[int | None] = mapped_column(BigInteger, default=None)
     status: Mapped[str] = mapped_column(String(30))
     duration_sec: Mapped[float | None] = mapped_column(Float, default=None)
-    transfer_speed: Mapped[str | None] = mapped_column(String(50), default=None)
+    bytes_per_sec: Mapped[float | None] = mapped_column(BigInteger, default=None)
 
 
 class TaskLog(Base):
