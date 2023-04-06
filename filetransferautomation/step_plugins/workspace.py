@@ -1,10 +1,10 @@
 """Workspace plugin."""
+import logging
 import os
 import shutil
 
 from pydantic import BaseModel
 
-from filetransferautomation import settings
 from filetransferautomation.plugin_collection import Plugin
 
 
@@ -29,11 +29,9 @@ class Create(Plugin):
 
     def process(self):
         """Create workspace."""
-        work_directory = os.path.join(
-            settings.WORK_DIR, self.get_variable("workspace_id")
-        )
+        work_directory = self.get_variable("workspace_directory")
         os.mkdir(work_directory)
-        print("created workspace", self.get_variable("workspace_id"))
+        logging.info("Created workspace directory ", work_directory)
 
 
 class Delete(Plugin):
@@ -45,10 +43,6 @@ class Delete(Plugin):
 
     def process(self):
         """Delete workspace."""
-        work_directory = os.path.join(
-            settings.WORK_DIR, self.get_variable("workspace_id")
-        )
-
+        work_directory = self.get_variable("workspace_directory")
         shutil.rmtree(work_directory)
-
-        print("deleted workspace", self.get_variable("workspace_id"))
+        logging.info("Deleted workspace directory ", work_directory)

@@ -1,4 +1,5 @@
 """Workspace plugin."""
+import logging
 import os
 import time
 
@@ -101,6 +102,8 @@ class DownloadFiles(Plugin):
             )
             downloaded_files.append(file)
 
+        logging.info(f"Downloaded files {downloaded_files} from '{host.name}'.")
+
         if self.arguments.delete_files:
             for file in downloaded_files:
                 os.remove(os.path.join(remote_directory, file))
@@ -127,7 +130,7 @@ class UploadFiles(Plugin):
 
         remote_directory = host.directory
         workspace_directory = self.get_variable("workspace_directory")
-        files_to_download = []
+        files_to_upload = []
         files = []
         uploaded_files = []
 
@@ -135,9 +138,9 @@ class UploadFiles(Plugin):
             files = os.listdir(workspace_directory)
             for file in files:
                 if compare_filter(file, self.arguments.file_filter):
-                    files_to_download.append(file)
+                    files_to_upload.append(file)
 
-        for file in files_to_download:
+        for file in files_to_upload:
             add_file_log_entry(
                 task_run_id=self.get_variable("workspace_id"),
                 task_id=self.get_variable("task_id"),
@@ -164,10 +167,12 @@ class UploadFiles(Plugin):
                 bytes_per_sec=size / duration,
             )
 
+        logging.info(f"Uploaded files {uploaded_files} to '{host.name}'.")
+
         if self.arguments.delete_files:
             for file in uploaded_files:
                 os.remove(os.path.join(workspace_directory, file))
 
         self.set_variable("found_files", files)
-        self.set_variable("matched_files", files_to_download)
+        self.set_variable("matched_files", files_to_upload)
         self.set_variable("uploaded_files", uploaded_files)
