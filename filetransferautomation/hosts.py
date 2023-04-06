@@ -14,6 +14,7 @@ def get_host(host_id: int) -> models.Host | None:
     """Get a host."""
     db = SessionLocal()
     db_host = db.query(models.Host).filter(models.Host.host_id == host_id).one_or_none()
+    db.close()
     if not db_host:
         raise HTTPException(status_code=404, detail="host not found")
     return db_host
@@ -24,6 +25,7 @@ async def get_hosts():
     """Get all hosts."""
     db = SessionLocal()
     result = db.query(models.Host).all()
+    db.close()
     return result
 
 
@@ -35,6 +37,7 @@ async def add_host(host: shemas.AddHost):
     db.add(db_host)
     db.commit()
     db.refresh(db_host)
+    db.close()
     return db_host
 
 
@@ -44,12 +47,15 @@ async def update_host(host_id: int, host: shemas.AddHost):
     db = SessionLocal()
     db_host = db.query(Host).filter(Host.host_id == host_id)
     if not db_host:
+        db.close()
         raise HTTPException(status_code=404, detail="host not found")
     if db_host:
         db_host.update(dict(host))
         db.commit()
         db_host = db.query(Host).filter(Host.host_id == host_id).one_or_none()
+        db.close()
         return db_host
+    db.close()
     return None
 
 
@@ -59,8 +65,10 @@ async def delete_host(host_id: int):
     db = SessionLocal()
     db_host = db.query(Host).filter(Host.host_id == host_id)
     if not db_host:
+        db.close()
         raise HTTPException(status_code=404, detail="host not found")
     if db_host:
         db_host.delete()
         db.commit()
+        db.close()
     return None

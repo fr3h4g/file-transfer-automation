@@ -84,6 +84,7 @@ def add_file_log_entry(
                 )
     db.add(db_file_log)
     db.commit()
+    db.close()
 
 
 def add_task_log_entry(
@@ -112,6 +113,7 @@ def add_task_log_entry(
     )
     db.add(db_task_log)
     db.commit()
+    db.close()
 
 
 @router.get("/files")
@@ -119,6 +121,7 @@ def get_files_log():
     """Get all file log entrys."""
     db = SessionLocal()
     db_file_log = db.query(FileLog).all()
+    db.close()
     return db_file_log
 
 
@@ -127,6 +130,7 @@ def get_tasks_log():
     """Get all tasks log entrys."""
     db = SessionLocal()
     db_task_log = db.query(TaskLog).all()
+    db.close()
     return db_task_log
 
 
@@ -156,4 +160,5 @@ def get_task_log(task_run_id: str):
         )
         db_task_log.files_downloaded = db_files_download_log
         db_task_log.files_uploaded = db_files_upload_log
+    db.close()
     return db_task_log

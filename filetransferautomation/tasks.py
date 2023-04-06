@@ -109,6 +109,7 @@ async def get_task(task_id: int):
         raise HTTPException(status_code=404, detail="task not found")
     db_task.schedules = await get_task_schedules(db_task.task_id)
     db_task.steps = await get_task_steps(db_task.task_id)
+    db.close()
     return db_task
 
 
@@ -120,6 +121,7 @@ async def get_active_tasks():
     for row in result:
         row.schedules = await get_task_schedules(row.task_id)
         row.steps = await get_task_steps(row.task_id)
+    db.close()
     return result
 
 
@@ -131,6 +133,7 @@ async def get_tasks():
     for row in result:
         row.schedules = await get_task_schedules(row.task_id)
         row.steps = await get_task_steps(row.task_id)
+    db.close()
     return result
 
 
@@ -142,6 +145,7 @@ async def add_task(task: shemas.AddTask):
     db.add(db_task)
     db.commit()
     db.refresh(db_task)
+    db.close()
     return db_task
 
 
@@ -151,12 +155,15 @@ async def update_task(task_id: int, task: shemas.AddTask):
     db = SessionLocal()
     db_task = db.query(Task).filter(Task.task_id == task_id)
     if not db_task:
+        db.close()
         raise HTTPException(status_code=404, detail="task not found")
     if db_task:
         db_task.update(dict(task))
         db.commit()
         db_task = db.query(Task).filter(Task.task_id == task_id).one_or_none()
+        db.close()
         return db_task
+    db.close()
     return None
 
 
@@ -166,10 +173,12 @@ async def delete_task(task_id: int):
     db = SessionLocal()
     db_task = db.query(models.Task).filter(models.Task.task_id == task_id)
     if not db_task:
+        db.close()
         raise HTTPException(status_code=404, detail="task not found")
     if db_task:
         db_task.delete()
         db.commit()
+    db.close()
     return None
 
 
@@ -186,6 +195,7 @@ async def get_task_steps(task_id: int):
     for row in result:
         if row.host_id:
             row.host = get_host(row.host_id)
+    db.close()
     return result
 
 
@@ -194,6 +204,7 @@ async def get_task_schedules(task_id: int):
     """Get a tasks schedules."""
     db = SessionLocal()
     db_task = db.query(models.Schedule).filter(models.Schedule.task_id == task_id).all()
+    db.close()
     return db_task
 
 
@@ -206,10 +217,13 @@ async def delete_schedule(task_id: int, schedule_id: int):
         models.Schedule.task_id == task_id,
     )
     if not db_schedule:
+        db.close()
         raise HTTPException(status_code=404, detail="schedule not found")
     if db_schedule:
         db_schedule.delete()
         db.commit()
+        db.close()
+    db.close()
     return None
 
 
