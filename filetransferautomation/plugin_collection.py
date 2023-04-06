@@ -12,12 +12,13 @@ import jinja2
 class Plugin:
     """Basemodel for plugins."""
 
-    name = ""
     input_model = None
+    output_model = None
     arguments = input_model
 
     def __init__(self, arguments: str, variables):
         """Init."""
+
         if arguments:
             environment = jinja2.Environment()
 
@@ -46,6 +47,17 @@ class Plugin:
         if name in self.variables:
             return self.variables[name]
         return None
+
+
+def split_uppercase(in_str: str):
+    """Split uppercase name with _."""
+    res = ""
+    for i in in_str:
+        if i.isupper():
+            res += "_" + i
+        else:
+            res += i
+    return res.strip("_")
 
 
 class PluginCollection:
@@ -96,6 +108,11 @@ class PluginCollection:
                 for _, clsmember in clsmembers:
                     # Only add classes that are a sub class of Plugin, but NOT Plugin itself
                     if issubclass(clsmember, Plugin) & (clsmember is not Plugin):
+                        clsmember.name = (  # type: ignore
+                            str(clsmember.__module__).split(".")[-1].lower()
+                            + "_"
+                            + split_uppercase(str(clsmember.__name__)).lower()
+                        )
                         self.plugins.append(clsmember)
 
         # Now that we have looked at all the modules in the current package, start looking

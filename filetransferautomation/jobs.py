@@ -34,8 +34,8 @@ async def load_jobs():
                     await schedules.update_schedule_job_id(
                         schedule.schedule_id, job._id
                     )
-                job.do_function(tasks.run_task_threaded, task)
-                tasks.run_task_threaded(task)
+                job.do_function(tasks.run_task_threaded, task.task_id)
+                tasks.run_task_threaded(task.task_id)
 
 
 @router.get("")

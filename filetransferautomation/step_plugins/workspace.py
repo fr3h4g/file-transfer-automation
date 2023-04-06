@@ -19,10 +19,9 @@ class WorkspaceOutput(BaseModel):
     ...
 
 
-class CreateWorkspace(Plugin):
+class Create(Plugin):
     """Create workspace plugin."""
 
-    name = "create_workspace"
     input_model = WorkspaceInput
     output_model = WorkspaceOutput
     arguments = input_model
@@ -36,10 +35,9 @@ class CreateWorkspace(Plugin):
         print("created workspace", self.get_variable("workspace_id"))
 
 
-class DeleteWorkspace(Plugin):
+class Delete(Plugin):
     """Delete workspace plugin."""
 
-    name = "delete_workspace"
     input_model = WorkspaceInput
     output_model = WorkspaceOutput
     arguments = input_model

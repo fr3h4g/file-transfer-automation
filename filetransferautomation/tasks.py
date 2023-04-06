@@ -1,6 +1,7 @@
 """Tasks api and data."""
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 import threading
@@ -8,7 +9,7 @@ import uuid
 
 from fastapi import APIRouter, HTTPException
 
-from filetransferautomation import models, settings, shemas, tasks
+from filetransferautomation import models, settings, shemas
 from filetransferautomation.database import SessionLocal
 from filetransferautomation.hosts import get_host
 from filetransferautomation.logs import add_task_log_entry
@@ -18,53 +19,82 @@ from filetransferautomation.plugin_collection import PluginCollection
 router = APIRouter()
 
 
-def run_task(task: models.Task):
+def run_task(task_id: int):
     """Run task."""
+
+    task = asyncio.run(get_task(task_id))
+
     workspace_id = str(uuid.uuid4())
 
-    logging.info(
-        f"--- Running task '{task.name}', id: {task.task_id}, task_run_id: {workspace_id}, "
-        f"thread {threading.get_native_id()}."
-    )
-    add_task_log_entry(workspace_id, task.task_id, "running")
+    if task:
+        error = False
 
-    step_plugins = PluginCollection("filetransferautomation.step_plugins")
+        logging.info(
+            f"--- Running task '{task.name}', id: {task.task_id}, task_run_id: {workspace_id}, "
+            f"thread {threading.get_native_id()}."
+        )
+        add_task_log_entry(workspace_id, task.task_id, "running")
 
-    variables = {
-        "task_id": task.task_id,
-        "task_name": task.name,
-        "workspace_id": workspace_id,
-        "workspace_directory": os.path.join(settings.WORK_DIR, workspace_id),
-    }
+        step_plugins = PluginCollection("filetransferautomation.step_plugins")
 
-    for step in task.steps:
-        variables = {**variables, "step_id": step.step_id}
-        plugin_found = False
-        for plugin in step_plugins.plugins:
-            if step.active == 0:
-                logging.info(
-                    f"Step is not active. Skipping step, step_id: {step.step_id}, "
-                    f"script: {plugin.name.lower()}"
-                )
-            elif step.script.lower() == plugin.name.lower():
-                plugin_found = True
-                tmp = plugin(step.arguments, variables)
-                tmp.process()
-                variables = tmp.variables
-        if not plugin_found:
-            raise ValueError(f"Plugin script '{step.script.lower()}' not found.")
+        global_variables = {
+            "task_id": task.task_id,
+            "task_name": task.name,
+            "workspace_id": workspace_id,
+            "workspace_directory": os.path.join(settings.WORK_DIR, workspace_id),
+        }
+        logging.debug(f"{global_variables=}")
 
-    logging.info(
-        f"Task '{task.name}', id: {task.task_id}, task_run_id: {workspace_id} completed."
-    )
-    logging.info(
-        f"--- Exiting task '{task.name}', id: {task.task_id}, task_run_id: {workspace_id}, "
-        f"thread {threading.get_native_id()}."
-    )
-    add_task_log_entry(workspace_id, task.task_id, "success")
+        variables = {}
+
+        for step in task.steps:
+            variables = {**variables, "step_id": step.step_id, "host_id": step.host_id}
+            plugin_found = False
+            for plugin in step_plugins.plugins:
+                if step.active == 0:
+                    logging.info(
+                        f"Step is not active. Skipping step, step_id: {step.step_id}, "
+                        f"script: {plugin.name.lower()}"
+                    )
+                elif step.script.lower() == plugin.name.lower():
+                    plugin_found = True
+                    logging.debug(
+                        f"--- Running step '{plugin.name.lower()}', "
+                        f"input arguments={step.arguments}, {variables=}."
+                    )
+                    tmp = plugin(step.arguments, {**variables, **global_variables})
+                    tmp.process()
+                    variables = tmp.variables
+                    logging.debug(
+                        f"--- Step '{plugin.name.lower()}' done, output {variables=}."
+                    )
+            if not plugin_found:
+                logging.error(f"Plugin script '{step.script.lower()}' not found.")
+                error = True
+                break
+
+        if error:
+            logging.error(
+                f"Error in task '{task.name}', id: {task.task_id}, "
+                f"task_run_id: {workspace_id} halted."
+            )
+            add_task_log_entry(workspace_id, task.task_id, "error")
+        else:
+            logging.info(
+                f"Task '{task.name}', id: {task.task_id}, task_run_id: {workspace_id} completed."
+            )
+            add_task_log_entry(workspace_id, task.task_id, "success")
+
+        logging.info(
+            f"--- Exiting task '{task.name}', id: {task.task_id}, task_run_id: {workspace_id}, "
+            f"thread {threading.get_native_id()}."
+        )
+
+    else:
+        logging.error(f"Task id: {task.task_id}, not found.")
 
 
-def run_task_threaded(task: tasks.Task):
+def run_task_threaded(task: int):
     """Run task in thread."""
     new_thread = threading.Thread(target=run_task, args=(task,))
     new_thread.start()
@@ -189,5 +219,5 @@ async def run_task_now(task_id: int):
     db_task = await get_task(task_id)
     if not db_task:
         raise HTTPException(status_code=404, detail="task not found")
-    run_task_threaded(db_task)
+    run_task_threaded(db_task.task_id)
     return None
