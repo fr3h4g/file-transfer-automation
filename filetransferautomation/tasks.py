@@ -54,7 +54,13 @@ def run_task(task_id: int):
         variables = {}
 
         for step in task.steps:
-            variables = {**variables, "step_id": step.step_id, "host_id": step.host_id}
+            variables = {
+                **variables,
+                "step_id": step.step_id,
+                "host_id": step.host_id,
+                "error": False,
+                "error_message": "",
+            }
             plugin_found = False
             for plugin in step_plugins.plugins:
                 if step.active == 0:
@@ -74,6 +80,13 @@ def run_task(task_id: int):
                     logging.debug(
                         f"--- Step '{plugin.name.lower()}' done, output {variables=}."
                     )
+                if variables["error"]:
+                    logging.debug(
+                        f"Error in step {step.step_id}, '{plugin.name.lower()}', "
+                        f"message: '{variables['error_message']}'."
+                    )
+                    error = True
+                    break
             if not plugin_found:
                 logging.error(f"Plugin script '{step.script.lower()}' not found.")
                 error = True
