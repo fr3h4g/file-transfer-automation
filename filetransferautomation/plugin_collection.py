@@ -8,6 +8,8 @@ from typing import Any
 
 import jinja2
 
+from filetransferautomation.common import split_uppercase
+
 
 class Plugin:
     """Basemodel for plugins."""
@@ -47,17 +49,6 @@ class Plugin:
         if name in self.variables:
             return self.variables[name]
         return None
-
-
-def split_uppercase(in_str: str):
-    """Split uppercase name with _."""
-    res = ""
-    for i in in_str:
-        if i.isupper():
-            res += "_" + i
-        else:
-            res += i
-    return res.strip("_")
 
 
 class PluginCollection:
