@@ -26,7 +26,7 @@ def run_task(task_id: int):
 
     workspace_id = str(uuid.uuid4())
 
-    if task:
+    if task and task.active == 1:
         error = False
 
         logging.info(
