@@ -26,7 +26,13 @@ def run_task(task_id: int):
 
     workspace_id = str(uuid.uuid4())
 
-    if task and task.active == 1:
+    if task:
+        if task.active == 0:
+            logging.info(
+                f"--- Task '{task.name}' is not active, skipping task, id: {task.task_id}"
+            )
+            return None
+
         error = False
 
         logging.info(
