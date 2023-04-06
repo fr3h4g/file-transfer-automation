@@ -31,7 +31,7 @@ class Create(Plugin):
         """Create workspace."""
         work_directory = self.get_variable("workspace_directory")
         os.mkdir(work_directory)
-        logging.info("Created workspace directory ", work_directory)
+        logging.info(f"Created workspace directory '{work_directory}'.")
 
 
 class Delete(Plugin):
@@ -45,4 +45,4 @@ class Delete(Plugin):
         """Delete workspace."""
         work_directory = self.get_variable("workspace_directory")
         shutil.rmtree(work_directory)
-        logging.info("Deleted workspace directory ", work_directory)
+        logging.info(f"Deleted workspace directory '{work_directory}'.")
