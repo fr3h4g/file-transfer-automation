@@ -56,35 +56,34 @@ def add_file_log_entry(
 ):
     """Add file log entry."""
     timestamp = datetime.datetime.now()
-    db = SessionLocal()
-    db_file_log = FileLog(
-        task_run_id=task_run_id,
-        task_id=task_id,
-        step_id=step_id,
-        status=status,
-        file_id=file.file_id,
-        file_name=file.name.removesuffix(".processing"),
-        size=file.size,
-        timestamp=timestamp,
-    )
-    if status in ("uploaded", "downloaded"):
-        get_status = "uploading" if status == "uploaded" else "downloading"
-        db_file_start = (
-            db.query(FileLog)
-            .filter(FileLog.file_id == file.file_id, FileLog.status == get_status)
-            .one_or_none()
+    with SessionLocal() as db:
+        db_file_log = FileLog(
+            task_run_id=task_run_id,
+            task_id=task_id,
+            step_id=step_id,
+            status=status,
+            file_id=file.file_id,
+            file_name=file.name.removesuffix(".processing"),
+            size=file.size,
+            timestamp=timestamp,
         )
-        if db_file_start:
-            db_file_log.duration_sec = (
-                timestamp - db_file_start.timestamp
-            ).total_seconds()
-            if file.size:
-                db_file_log.transfer_speed = (
-                    str(round(file.size / db_file_log.duration_sec)) + " Bytes/sec"
-                )
-    db.add(db_file_log)
-    db.commit()
-    db.close()
+        if status in ("uploaded", "downloaded"):
+            get_status = "uploading" if status == "uploaded" else "downloading"
+            db_file_start = (
+                db.query(FileLog)
+                .filter(FileLog.file_id == file.file_id, FileLog.status == get_status)
+                .one_or_none()
+            )
+            if db_file_start:
+                db_file_log.duration_sec = (
+                    timestamp - db_file_start.timestamp
+                ).total_seconds()
+                if file.size:
+                    db_file_log.transfer_speed = (
+                        str(round(file.size / db_file_log.duration_sec)) + " Bytes/sec"
+                    )
+        db.add(db_file_log)
+        db.commit()
 
 
 def add_task_log_entry(
@@ -95,70 +94,68 @@ def add_task_log_entry(
     """Add task log entry."""
     timestamp = datetime.datetime.now()
 
-    db = SessionLocal()
-    db_task_log = (
-        db.query(TaskLog).filter(TaskLog.task_run_id == task_run_id).one_or_none()
-    )
-    if db_task_log:
-        db_task_log.end_time = timestamp
-        db_task_log.status = status
-        db_task_log.duration_sec = (timestamp - db_task_log.start_time).total_seconds()
+    with SessionLocal() as db:
+        db_task_log = (
+            db.query(TaskLog).filter(TaskLog.task_run_id == task_run_id).one_or_none()
+        )
+        if db_task_log:
+            db_task_log.end_time = timestamp
+            db_task_log.status = status
+            db_task_log.duration_sec = (
+                timestamp - db_task_log.start_time
+            ).total_seconds()
+            db.commit()
+            return None
+        db_task_log = TaskLog(
+            task_run_id=task_run_id,
+            task_id=task_id,
+            status=status,
+            start_time=timestamp,
+        )
+        db.add(db_task_log)
         db.commit()
-        return None
-    db_task_log = TaskLog(
-        task_run_id=task_run_id,
-        task_id=task_id,
-        status=status,
-        start_time=timestamp,
-    )
-    db.add(db_task_log)
-    db.commit()
-    db.close()
 
 
 @router.get("/files")
 def get_files_log():
     """Get all file log entrys."""
-    db = SessionLocal()
-    db_file_log = db.query(FileLog).all()
-    db.close()
-    return db_file_log
+    with SessionLocal() as db:
+        db_file_log = db.query(FileLog).all()
+        return db_file_log
 
 
 @router.get("/tasks")
 def get_tasks_log():
     """Get all tasks log entrys."""
-    db = SessionLocal()
-    db_task_log = db.query(TaskLog).all()
-    db.close()
-    return db_task_log
+    with SessionLocal() as db:
+        db_task_log = db.query(TaskLog).all()
+        return db_task_log
 
 
 @router.get("/tasks/{task_run_id}")
 def get_task_log(task_run_id: str):
     """Get a task log entry."""
-    db = SessionLocal()
-    db_task_log = (
-        db.query(TaskLog).filter(TaskLog.task_run_id == task_run_id).one_or_none()
-    )
-    if db_task_log:
-        db_files_download_log = (
-            db.query(FileLog)
-            .filter(
-                FileLog.task_run_id == task_run_id,
-                FileLog.status == "downloaded",
-            )
-            .all()
+    with SessionLocal() as db:
+        db_task_log = (
+            db.query(TaskLog).filter(TaskLog.task_run_id == task_run_id).one_or_none()
         )
-        db_files_upload_log = (
-            db.query(FileLog)
-            .filter(
-                FileLog.task_run_id == task_run_id,
-                FileLog.status == "uploaded",
+        if db_task_log:
+            db_files_download_log = (
+                db.query(FileLog)
+                .filter(
+                    FileLog.task_run_id == task_run_id,
+                    FileLog.status == "downloaded",
+                )
+                .all()
             )
-            .all()
-        )
-        db_task_log.files_downloaded = db_files_download_log
-        db_task_log.files_uploaded = db_files_upload_log
-    db.close()
-    return db_task_log
+            db_files_upload_log = (
+                db.query(FileLog)
+                .filter(
+                    FileLog.task_run_id == task_run_id,
+                    FileLog.status == "uploaded",
+                )
+                .all()
+            )
+            db_task_log.files_downloaded = db_files_download_log
+            db_task_log.files_uploaded = db_files_upload_log
+        return db_task_log
