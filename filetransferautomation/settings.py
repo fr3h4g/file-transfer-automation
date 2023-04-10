@@ -10,7 +10,6 @@ DEV_MODE: bool = bool(os.getenv("DEV_MODE", False))  # used for local developmen
 DIR_ADDON = ""
 if DEV_MODE:
     DIR_ADDON = "."
-    DATABASE_URL = "sqlite:///test.db"
 
 DATA_DIR = "/data"
 FOLDERS_DIR = DIR_ADDON + os.path.join(DATA_DIR, "folders")
