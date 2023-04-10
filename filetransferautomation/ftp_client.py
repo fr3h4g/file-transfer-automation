@@ -1,5 +1,12 @@
 """FTP client."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from _typeshed import SupportsRead
+
 import ftplib
 from ftplib import FTP
 
@@ -16,7 +23,7 @@ class FTPClient:
             host=hostname, user=username, passwd=password, timeout=10
         )
 
-    def _check_if_dir(self, item_name) -> bool:
+    def _check_if_dir(self, item_name: str) -> bool:
         """Check if it's a directory."""
         if self._connection:
             try:
@@ -36,12 +43,12 @@ class FTPClient:
                     file_list.append(filename)
         return file_list
 
-    def chdir(self, path):
+    def chdir(self, path: str):
         """Change directory."""
         if self._connection:
             self._connection.cwd(path)
 
-    def get_file(self, filename):
+    def get_file(self, filename: str):
         """Download remote file."""
         self._file_data = b""
         if self._connection:
@@ -50,11 +57,22 @@ class FTPClient:
             )
         return self._file_data
 
+    def send_file(self, filename: str, file_data: SupportsRead[bytes]) -> bool:
+        """Upload file to remote."""
+        if self._connection:
+            try:
+                self._connection.storbinary(f"STOR {filename}", file_data)
+            except ftplib.all_errors:
+                return False
+            else:
+                return True
+        return False
+
     def receive_file_object_cb(self, data: bytes):
         """Receive file data."""
         self._file_data += data
 
-    def remove(self, filename):
+    def remove(self, filename: str):
         """Delete remote file."""
         if self._connection:
             self._connection.delete(filename)
