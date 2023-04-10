@@ -83,6 +83,7 @@ class DownloadFiles(Plugin):
                 filename=file,
                 status="downloading",
             )
+
             start_time = time.time()
             with open(os.path.join(remote_directory, file), "rb") as from_file:
                 file_data = from_file.read()
@@ -90,6 +91,7 @@ class DownloadFiles(Plugin):
                 to_file.write(file_data)
             size = os.path.getsize(os.path.join(workspace_directory, file))
             duration = time.time() - start_time
+
             add_file_log_entry(
                 task_run_id=self.get_variable("workspace_id"),
                 task_id=self.get_variable("task_id"),
@@ -148,6 +150,7 @@ class UploadFiles(Plugin):
                 filename=file,
                 status="uploading",
             )
+
             start_time = time.time()
             with open(os.path.join(workspace_directory, file), "rb") as from_file:
                 file_data = from_file.read()
@@ -156,6 +159,7 @@ class UploadFiles(Plugin):
             uploaded_files.append(file)
             size = os.path.getsize(os.path.join(workspace_directory, file))
             duration = time.time() - start_time
+
             add_file_log_entry(
                 task_run_id=self.get_variable("workspace_id"),
                 task_id=self.get_variable("task_id"),
