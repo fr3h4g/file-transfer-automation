@@ -94,7 +94,7 @@ class Download(Plugin):
 
             if self.arguments.delete_files:
                 for file in downloaded_files:
-                    ftp.remove(os.path.join(workspace_directory, file))
+                    ftp.remove(file)
 
             ftp.close()
 
