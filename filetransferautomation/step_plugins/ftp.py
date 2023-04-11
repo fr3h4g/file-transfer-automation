@@ -98,7 +98,7 @@ class Download(Plugin):
 
             ftp.close()
 
-        logging.info(f"Downloaded files {downloaded_files} to '{host.name}'.")
+        logging.info(f"Downloaded files {downloaded_files} from '{host.name}'.")
 
         self.set_variable("found_files", files)
         self.set_variable("matched_files", files_to_download)
