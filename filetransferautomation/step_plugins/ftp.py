@@ -37,10 +37,11 @@ class Download(Plugin):
 
     def process(self):
         """Download file from FTP."""
-        host = get_host(self.get_variable("host_id"))
+        if "host" in self.variables:
+            host = self.get_variable("host")
+        else:
+            host = get_host(self.get_variable("host_id"))
         if not host:
-            return None
-        if not host.directory:
             return None
 
         workspace_directory = self.get_variable("workspace_directory")
@@ -48,7 +49,7 @@ class Download(Plugin):
         files = []
         downloaded_files = []
 
-        if host and host.username and host.password:
+        if host and host.host and host.username and host.password:
             ftp = FTPClient(
                 hostname=host.host,
                 username=host.username,
@@ -91,16 +92,13 @@ class Download(Plugin):
                     bytes_per_sec=size / duration,
                 )
 
-                if self.arguments.delete_files:
-                    ftp.remove(file)
+            if self.arguments.delete_files:
+                for file in downloaded_files:
+                    ftp.remove(os.path.join(workspace_directory, file))
 
             ftp.close()
 
         logging.info(f"Downloaded files {downloaded_files} to '{host.name}'.")
-
-        if self.arguments.delete_files:
-            for file in downloaded_files:
-                os.remove(os.path.join(workspace_directory, file))
 
         self.set_variable("found_files", files)
         self.set_variable("matched_files", files_to_download)
@@ -116,10 +114,11 @@ class Upload(Plugin):
 
     def process(self):
         """Upload file to FTP."""
-        host = get_host(self.get_variable("host_id"))
+        if "host" in self.variables:
+            host = self.get_variable("host")
+        else:
+            host = get_host(self.get_variable("host_id"))
         if not host:
-            return None
-        if not host.directory:
             return None
 
         workspace_directory = self.get_variable("workspace_directory")
@@ -127,7 +126,7 @@ class Upload(Plugin):
         files = []
         uploaded_files = []
 
-        if host and host.username and host.password:
+        if host and host.host and host.username and host.password:
             ftp = FTPClient(
                 hostname=host.host,
                 username=host.username,
@@ -152,6 +151,8 @@ class Upload(Plugin):
 
                 start_time = time.time()
                 with open(os.path.join(workspace_directory, file), "rb") as from_file:
+                    if not host.directory:
+                        host.directory = "."
                     filename = str(os.path.join(host.directory, file)) + ".tmp"
 
                     try:  # noqa: SIM105
@@ -159,12 +160,11 @@ class Upload(Plugin):
                     except Exception:
                         pass
 
-                    ftp.send_file(file, from_file)
+                    ftp.send_file(filename, from_file)
+
+                    ftp.rename(filename, filename[:-4])
 
                     uploaded_files.append(file)
-
-                    if self.arguments.delete_files:
-                        ftp.remove(file)
 
                 size = os.path.getsize(os.path.join(workspace_directory, file))
                 duration = time.time() - start_time

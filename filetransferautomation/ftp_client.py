@@ -77,6 +77,11 @@ class FTPClient:
         if self._connection:
             self._connection.delete(filename)
 
+    def rename(self, filename_from: str, filename_to: str):
+        """Rename remote file."""
+        if self._connection:
+            self._connection.rename(filename_from, filename_to)
+
     def close(self):
         """Close connection."""
         if self._connection:

@@ -46,6 +46,7 @@ def run_task(task_id: int):
         global_variables = {
             "task_id": task.task_id,
             "task_name": task.name,
+            "task": task,
             "workspace_id": workspace_id,
             "workspace_directory": os.path.join(settings.WORK_DIR, workspace_id),
         }
@@ -54,10 +55,15 @@ def run_task(task_id: int):
         variables = {}
 
         for step in task.steps:
+            host = None
+            if step.host_id:
+                host = get_host(step.host_id)
             variables = {
                 **variables,
                 "step_id": step.step_id,
+                "step": step,
                 "host_id": step.host_id,
+                "host": host,
                 "error": False,
                 "error_message": "",
             }

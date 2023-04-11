@@ -36,7 +36,10 @@ class ListFiles(Plugin):
 
     def process(self):
         """List files in local directory."""
-        host = get_host(self.get_variable("host_id"))
+        if "host" in self.variables:
+            host = self.get_variable("host")
+        else:
+            host = get_host(self.get_variable("host_id"))
         matched_files = []
         files = []
         if host:
@@ -57,7 +60,10 @@ class DownloadFiles(Plugin):
 
     def process(self):
         """Download files from local directory."""
-        host = get_host(self.get_variable("host_id"))
+        if "host" in self.variables:
+            host = self.get_variable("host")
+        else:
+            host = get_host(self.get_variable("host_id"))
         if not host:
             return None
         if not host.directory:
@@ -124,7 +130,10 @@ class UploadFiles(Plugin):
 
     def process(self):
         """Upload files to local directory."""
-        host = get_host(self.get_variable("host_id"))
+        if "host" in self.variables:
+            host = self.get_variable("host")
+        else:
+            host = get_host(self.get_variable("host_id"))
         if not host:
             return None
         if not host.directory:

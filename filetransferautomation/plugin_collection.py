@@ -1,7 +1,6 @@
 """Plugin loading."""
 import inspect
 import json
-import logging
 import os
 import pkgutil
 from typing import Any
@@ -25,10 +24,10 @@ class Plugin:
             environment = jinja2.Environment()
 
             template = environment.from_string(arguments)
-            tmp = {}
-            for var in variables:
-                tmp[var] = json.dumps(variables[var])
-            arguments = template.render(**tmp)
+            # tmp = {}
+            # for var in variables:
+            #    tmp[var] = json.dumps(dict(variables[var]))
+            arguments = template.render(variables)
 
         if not self.input_model:
             self.arguments = json.loads(arguments)
@@ -64,27 +63,6 @@ class PluginCollection:
         self.plugins = []
         self.seen_paths = []
         self.walk_package(self.plugin_package)
-
-    async def run_plugins_on_event(self, event, event_data):
-        """Apply all of the plugins on the argument supplied to this function."""
-        status = False
-        available = False
-        for plugin in self.plugins:
-            tmp_status = plugin.check_operation(event, event_data)
-            if tmp_status:
-                available = True
-                break
-        if not available:
-            logging.info('event "%s" is not for me.', event)
-            return False
-        for plugin in self.plugins:
-            if plugin.check_operation(event, event_data):
-                logging.info('running event "%s"', event)
-                status = await plugin.perform_operation(event, event_data)
-                logging.info('event "%s" is done', event)
-                if status:
-                    return True
-        return False
 
     def walk_package(self, package):
         """Recursively walk the supplied package to retrieve all plugins."""

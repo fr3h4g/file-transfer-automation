@@ -133,6 +133,7 @@ class Host(Base):
     )
     directory: Mapped[str | None] = mapped_column(String(255), default=None)
     share: Mapped[str | None] = mapped_column(String(255), default=None)
+    host: Mapped[str | None] = mapped_column(String(100), default=None)
     username: Mapped[str | None] = mapped_column(String(100), default=None)
     password: Mapped[str | None] = mapped_column(String(100), default=None)
     description: Mapped[str | None] = mapped_column(String(255), default=None)
