@@ -1,14 +1,10 @@
-"""Test against FTP docker image."""
+"""Test against SFTP docker image."""
 from filetransferautomation.models import Host
-from filetransferautomation.step_plugins.ftp import Download, Upload
+from filetransferautomation.step_plugins.sftp import Download, Upload
 
 """
-docker run -d --name ftp -p 2221:21 -p 30000-30009:30000-30009 \
-    -e FTP_USER_NAME=bob \
-    -e FTP_USER_PASS=12345 \
-    -e FTP_USER_HOME=/home/bob \
-    -e "PUBLICHOST=localhost" \
-    stilliard/pure-ftpd
+docker run --name sftp -v ${PWD}/e2e_data/sftp.json:/app/config/sftp.json:ro \
+    -p 2222:22 -d emberstack/sftp
 """
 
 USER = "bob"
@@ -16,13 +12,13 @@ HOST = "localhost"
 PASS = "12345"
 
 
-def test_ftp_upload():
-    """FTP upload test."""
+def test_sftp_upload():
+    """SFTP upload test."""
     host = Host(
-        username="bob",
-        password="12345",
-        host="localhost",
-        port=2221,
+        username=USER,
+        password=PASS,
+        host=HOST,
+        port=2222,
         directory="",
     )
     download = Upload(
@@ -38,13 +34,13 @@ def test_ftp_upload():
     download.process()
 
 
-def test_ftp_download():
-    """FTP download test."""
+def test_sftp_download():
+    """SFTP download test."""
     host = Host(
-        username="bob",
-        password="12345",
-        host="localhost",
-        port=2221,
+        username=USER,
+        password=PASS,
+        host=HOST,
+        port=2222,
         directory="",
     )
     download = Download(

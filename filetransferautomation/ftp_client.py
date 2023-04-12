@@ -17,11 +17,11 @@ class FTPClient:
     _connection = None
     _file_data = b""
 
-    def __init__(self, hostname: str, username: str, password: str):
+    def __init__(self, hostname: str, username: str, password: str, port=21):
         """Connect to FTP."""
-        self._connection = FTP(
-            host=hostname, user=username, passwd=password, timeout=10
-        )
+        self._connection = FTP()
+        self._connection.connect(host=hostname, port=port, timeout=10)
+        self._connection.login(user=username, passwd=password)
 
     def _check_if_dir(self, item_name: str) -> bool:
         """Check if it's a directory."""

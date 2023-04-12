@@ -54,6 +54,7 @@ class Download(Plugin):
                 hostname=host.host,
                 username=host.username,
                 password=host.password,
+                port=host.port if host.port else 21,
             )
             if host.directory:
                 ftp.chdir(host.directory)
@@ -131,6 +132,7 @@ class Upload(Plugin):
                 hostname=host.host,
                 username=host.username,
                 password=host.password,
+                port=host.port if host.port else 21,
             )
             if host.directory:
                 ftp.chdir(host.directory)
