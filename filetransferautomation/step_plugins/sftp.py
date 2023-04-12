@@ -1,4 +1,4 @@
-"""FTP plugin."""
+"""SFTP plugin."""
 import io
 import logging
 import os
@@ -30,14 +30,14 @@ class Output(BaseModel):
 
 
 class Download(Plugin):
-    """Download file from FTP."""
+    """Download file from SFTP."""
 
     input_model = Input
     output_model = Output
     arguments = input_model
 
     def process(self):
-        """Download file from FTP."""
+        """Download file from SFTP."""
         if "host" in self.variables:
             host = self.get_variable("host")
         else:
@@ -112,14 +112,14 @@ class Download(Plugin):
 
 
 class Upload(Plugin):
-    """Upload file to FTP."""
+    """Upload file to SFTP."""
 
     input_model = Input
     output_model = Output
     arguments = input_model
 
     def process(self):
-        """Upload file to FTP."""
+        """Upload file to SFTP."""
         if "host" in self.variables:
             host = self.get_variable("host")
         else:
