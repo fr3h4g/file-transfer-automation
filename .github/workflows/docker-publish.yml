@@ -60,7 +60,7 @@ jobs:
         ports:
           - 2222:22
         volumes:
-          - ${PWD}/e2e_data/sftp.json:/app/config/sftp.json:ro
+          - ${{ github.workspace }}/e2e_data/sftp.json:/app/config/sftp.json:ro
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
