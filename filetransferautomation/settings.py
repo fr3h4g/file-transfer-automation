@@ -14,8 +14,7 @@ if DEV_MODE:
 DATA_DIR = "/data"
 FOLDERS_DIR = DIR_ADDON + os.path.join(DATA_DIR, "folders")
 WORK_DIR = DIR_ADDON + os.path.join(DATA_DIR, "work")
-SCRIPTS_DIR = DIR_ADDON + os.path.join(DATA_DIR, "scripts")
-SCRIPTS_DIR = DIR_ADDON + os.path.join(DATA_DIR, "scripts")
+# SCRIPTS_DIR = DIR_ADDON + os.path.join(DATA_DIR, "scripts")
 
 DATABASE_URL = f"sqlite:///{DATA_DIR}/file-transfer-automation.db"
 

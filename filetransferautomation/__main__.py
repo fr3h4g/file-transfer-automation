@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import logging
+import os
 import sys
 
 from fastapi import FastAPI
@@ -74,6 +75,16 @@ app.include_router(
     prefix="/api/v1/jobs",
     tags=["jobs"],
 )
+
+
+def setup_std_folders():
+    """Make std folders."""
+    if not os.path.exists(settings.DATA_DIR):
+        os.mkdir(settings.DATA_DIR)
+    if not os.path.exists(settings.FOLDERS_DIR):
+        os.mkdir(settings.FOLDERS_DIR)
+    if not os.path.exists(settings.WORK_DIR):
+        os.mkdir(settings.WORK_DIR)
 
 
 @app.on_event("startup")
