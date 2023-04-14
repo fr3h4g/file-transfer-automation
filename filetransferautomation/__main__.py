@@ -79,12 +79,10 @@ app.include_router(
 
 def setup_std_folders():
     """Make std folders."""
-    if not os.path.exists(settings.DATA_DIR):
-        os.mkdir(settings.DATA_DIR)
     if not os.path.exists(settings.FOLDERS_DIR):
-        os.mkdir(settings.FOLDERS_DIR)
+        os.makedirs(settings.FOLDERS_DIR)
     if not os.path.exists(settings.WORK_DIR):
-        os.mkdir(settings.WORK_DIR)
+        os.makedirs(settings.WORK_DIR)
 
 
 @app.on_event("startup")
