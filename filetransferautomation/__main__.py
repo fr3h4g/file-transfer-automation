@@ -93,6 +93,8 @@ async def startup():
 
     models.Base.metadata.create_all(bind=engine)
 
+    setup_std_folders()
+
     logging.info("Loading folders.")
     folders_data = folders.load_folders()
     logging.info(f"{len(folders_data)} folders loaded.")
