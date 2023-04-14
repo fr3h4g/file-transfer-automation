@@ -110,18 +110,28 @@ def add_task_log_entry(
 
 
 @router.get("/files")
-def get_files_log():
+def get_files_log(limit: int = 100):
     """Get all file log entrys."""
     with SessionLocal() as db:
-        db_file_log = db.query(FileLog).all()
+        db_file_log = (
+            db.query(FileLog)
+            .order_by(FileLog.filelog_id.desc())
+            .limit(limit=limit)
+            .all()
+        )
         return db_file_log
 
 
 @router.get("/tasks")
-def get_tasks_log():
+def get_tasks_log(limit: int = 30):
     """Get all tasks log entrys."""
     with SessionLocal() as db:
-        db_task_log = db.query(TaskLog).all()
+        db_task_log = (
+            db.query(TaskLog)
+            .order_by(TaskLog.joblog_id.desc())
+            .limit(limit=limit)
+            .all()
+        )
         return db_task_log
 
 
