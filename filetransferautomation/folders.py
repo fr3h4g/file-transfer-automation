@@ -22,7 +22,7 @@ def load_folders():
     for folder in FOLDERS:
         path = os.path.join(settings.FOLDERS_DIR, folder.name)
         if not os.path.exists(path):
-            os.mkdir(path)
+            os.makedirs(path)
 
     return FOLDERS
 
