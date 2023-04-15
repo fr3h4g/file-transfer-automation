@@ -1,7 +1,7 @@
 """Test against SFTP docker image."""
 from filetransferautomation import models
-from filetransferautomation.models import Host
 from filetransferautomation.database import engine
+from filetransferautomation.models import Host
 from filetransferautomation.step_plugins.sftp import Download, Upload
 
 """

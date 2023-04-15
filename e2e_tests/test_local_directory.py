@@ -1,7 +1,7 @@
 """Test against FTP docker image."""
 from filetransferautomation import models
-from filetransferautomation.models import Host
 from filetransferautomation.database import engine
+from filetransferautomation.models import Host
 from filetransferautomation.step_plugins.local_directory import (
     DownloadFiles,
     UploadFiles,
