@@ -1,5 +1,7 @@
 """Test against FTP docker image."""
+from filetransferautomation import models
 from filetransferautomation.models import Host
+from filetransferautomation.database import engine
 from filetransferautomation.step_plugins.ftp import Download, Upload
 
 """
@@ -14,6 +16,11 @@ docker run -d --name ftp -p 2221:21 -p 30000-30009:30000-30009 \
 USER = "bob"
 HOST = "localhost"
 PASS = "12345"
+
+
+def test_db_setup():
+    """Setup db."""
+    models.Base.metadata.create_all(bind=engine)
 
 
 def test_ftp_upload():

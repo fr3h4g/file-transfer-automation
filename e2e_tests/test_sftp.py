@@ -1,5 +1,7 @@
 """Test against SFTP docker image."""
+from filetransferautomation import models
 from filetransferautomation.models import Host
+from filetransferautomation.database import engine
 from filetransferautomation.step_plugins.sftp import Download, Upload
 
 """
@@ -10,6 +12,11 @@ docker run --name sftp -v ${PWD}/e2e_data/sftp.json:/app/config/sftp.json:ro \
 USER = "bob"
 HOST = "localhost"
 PASS = "12345"
+
+
+def test_db_setup():
+    """Setup db."""
+    models.Base.metadata.create_all(bind=engine)
 
 
 def test_sftp_upload():
