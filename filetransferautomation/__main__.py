@@ -29,7 +29,7 @@ if not settings.DEV_MODE:
     logging.basicConfig(level=logging.INFO, stream=sys.stderr)
 if settings.DEV_MODE:
     logging.basicConfig(level=logging.DEBUG, stream=sys.stderr)
-logging.getLogger("smbprotocol").setLevel(logging.DEBUG)
+logging.getLogger("smbprotocol").setLevel(logging.ERROR)
 
 
 app = FastAPI()
