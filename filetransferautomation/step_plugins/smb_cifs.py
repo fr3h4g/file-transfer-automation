@@ -102,6 +102,8 @@ class Download(Plugin):
             for file in downloaded_files:
                 smbclient.remove(unc_path_join(host.share, file))
 
+        smbclient.reset_connection_cache()
+
         self.set_variable("found_files", files)
         self.set_variable("matched_files", files_to_download)
         self.set_variable("downloaded_files", downloaded_files)
@@ -171,6 +173,8 @@ class Upload(Plugin):
         if self.arguments.delete_files:
             for file in uploaded_files:
                 os.remove(os.path.join(workspace_directory, file))
+
+        smbclient.reset_connection_cache()
 
         self.set_variable("found_files", files)
         self.set_variable("matched_files", files_to_upload)
