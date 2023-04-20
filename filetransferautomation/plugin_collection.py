@@ -6,15 +6,28 @@ import pkgutil
 from typing import Any
 
 import jinja2
+from pydantic import BaseModel
 
 from filetransferautomation.common import split_uppercase
+
+
+class Input(BaseModel):
+    """Input data model."""
+
+    ...
+
+
+class Output(BaseModel):
+    """Output data model."""
+
+    ...
 
 
 class Plugin:
     """Basemodel for plugins."""
 
-    input_model = None
-    output_model = None
+    input_model = Input
+    output_model = Output
     arguments = input_model
 
     def __init__(self, arguments: str, variables):
@@ -32,8 +45,16 @@ class Plugin:
         if not self.input_model:
             self.arguments = json.loads(arguments)
         else:
+            self.check_arguments(json.loads(arguments))
             self.arguments = self.input_model(**json.loads(arguments))
         self.variables = variables
+
+    def check_arguments(self, arguments: dict):
+        """Check arguments."""
+        schema = self.input_model.schema()
+        for prop, _ in arguments.items():
+            if prop not in schema["properties"]:
+                raise ValueError(f"Unknown input properties '{prop}'.")
 
     def process(self):
         """Run plugin process."""
