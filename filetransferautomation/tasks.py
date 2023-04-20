@@ -80,9 +80,13 @@ def run_task(task_id: int):
                         f"--- Running step '{plugin.name.lower()}', "
                         f"input arguments={step.arguments}, {variables=}."
                     )
-                    tmp = plugin(step.arguments, {**variables, **global_variables})
-                    tmp.process()
-                    variables = tmp.variables
+                    try:
+                        tmp = plugin(step.arguments, {**variables, **global_variables})
+                        tmp.process()
+                        variables = tmp.variables
+                    except Exception as exc:
+                        variables["error"] = True
+                        variables["error_message"] = exc
                     logging.debug(
                         f"--- Step '{plugin.name.lower()}' done, output {variables=}."
                     )
@@ -97,7 +101,8 @@ def run_task(task_id: int):
                 logging.error(f"Plugin script '{step.script.lower()}' not found.")
                 error = True
                 break
-
+            if error:
+                break
         if error:
             logging.error(
                 f"Error in task '{task.name}', id: {task.task_id}, "
