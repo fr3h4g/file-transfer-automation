@@ -4,7 +4,6 @@ from __future__ import annotations
 import argparse
 import asyncio
 import logging
-import os
 import sys
 
 from fastapi import FastAPI
@@ -15,11 +14,13 @@ from filetransferautomation import (
     hosts,
     jobs,
     logs,
+    plugins,
     schedules,
     settings,
     steps,
     tasks,
 )
+from filetransferautomation.folders import setup_std_folders
 from filetransferautomation.jobs import load_jobs, run_schedules
 
 from . import models
@@ -77,13 +78,11 @@ app.include_router(
     tags=["jobs"],
 )
 
-
-def setup_std_folders():
-    """Make std folders."""
-    if not os.path.exists(settings.FOLDERS_DIR):
-        os.makedirs(settings.FOLDERS_DIR)
-    if not os.path.exists(settings.WORK_DIR):
-        os.makedirs(settings.WORK_DIR)
+app.include_router(
+    plugins.router,
+    prefix="/api/v1/plugins",
+    tags=["plugins"],
+)
 
 
 @app.on_event("startup")

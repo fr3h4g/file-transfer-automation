@@ -15,7 +15,7 @@ from filetransferautomation.plugin_collection import Plugin
 class Input(BaseModel):
     """Input data model."""
 
-    file_filter: str | None = None
+    file_filter: str | None = "*.*"
     delete_files: bool | None = False
 
 

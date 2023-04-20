@@ -90,3 +90,11 @@ async def download_file(id: int, filename: str):
         filename=filename,
         media_type="application/octet-stream",
     )
+
+
+def setup_std_folders():
+    """Make std folders."""
+    if not os.path.exists(settings.FOLDERS_DIR):
+        os.makedirs(settings.FOLDERS_DIR)
+    if not os.path.exists(settings.WORK_DIR):
+        os.makedirs(settings.WORK_DIR)

@@ -22,7 +22,7 @@ def unc_path_join(path, filename):
 class Input(BaseModel):
     """Input data model."""
 
-    file_filter: str | None = None
+    file_filter: str | None = "*.*"
     delete_files: bool | None = False
 
 
