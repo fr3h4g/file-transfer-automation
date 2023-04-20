@@ -14,6 +14,8 @@ engine = create_engine(
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+models.Base.metadata.create_all(bind=engine)
+
 with SessionLocal() as db:
     sql = []
     sql.append(
@@ -41,17 +43,41 @@ with SessionLocal() as db:
     )
     sql.append(
         models.Step(
-            step_id=1, task_id=1, host_id=1, file_mask="*.txt", step_type="source"
+            sort_order=10,
+            step_id=1,
+            task_id=1,
+            script="workspace_create",
+            arguments="{}",
         )
     )
     sql.append(
         models.Step(
-            step_id=2, task_id=1, host_id=2, file_mask="*.txt", step_type="destination"
+            sort_order=20,
+            step_id=2,
+            task_id=1,
+            host_id=1,
+            script="local_directory_download_files",
+            arguments='{"file_filter":"*.txt"}',
         )
     )
-    sql.append(models.Process(process_id=1, name="test", script_file="test.py"))
     sql.append(
-        models.Step(step_id=3, task_id=1, host_id=2, step_type="process", process_id=1)
+        models.Step(
+            sort_order=30,
+            step_id=3,
+            task_id=1,
+            host_id=2,
+            script="local_directory_upload_files",
+            arguments='{"file_filter":"*.txt"}',
+        )
+    )
+    sql.append(
+        models.Step(
+            sort_order=40,
+            step_id=4,
+            task_id=1,
+            script="workspace_delete",
+            arguments="{}",
+        )
     )
     sql.append(models.Task(task_id=1, name="test", description="", active=1))
     db.add_all(sql)
