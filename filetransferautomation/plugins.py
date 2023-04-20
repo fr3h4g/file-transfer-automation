@@ -1,11 +1,8 @@
 """Plugins."""
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 
-from filetransferautomation import models, shemas
-from filetransferautomation.database import SessionLocal
-from filetransferautomation.models import Schedule
 from filetransferautomation.plugin_collection import PluginCollection
 
 router = APIRouter()
