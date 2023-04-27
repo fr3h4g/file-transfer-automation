@@ -31,6 +31,7 @@ if not settings.DEV_MODE:
 if settings.DEV_MODE:
     logging.basicConfig(level=logging.DEBUG, stream=sys.stderr)
 logging.getLogger("smbprotocol").setLevel(logging.ERROR)
+logging.getLogger("paramiko").setLevel(logging.ERROR)
 
 
 app = FastAPI()
