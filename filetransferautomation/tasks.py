@@ -8,12 +8,13 @@ import threading
 import uuid
 
 from fastapi import APIRouter, HTTPException
+from sqlalchemy.sql.functions import func
 
 from filetransferautomation import models, settings, shemas
 from filetransferautomation.database import SessionLocal
 from filetransferautomation.hosts import get_host
 from filetransferautomation.logs import add_task_log_entry
-from filetransferautomation.models import Task
+from filetransferautomation.models import Task, TaskLog
 from filetransferautomation.plugin_collection import PluginCollection
 
 router = APIRouter()
@@ -128,6 +129,25 @@ def run_task_threaded(task: int):
     """Run task in thread."""
     new_thread = threading.Thread(target=run_task, args=(task,))
     new_thread.start()
+
+
+@router.get("/status")
+async def get_status():
+    """Get tasks status."""
+    return_data = []
+    with SessionLocal() as db:
+        for status in ("success", "error", "running"):
+            tmp = (
+                db.query(TaskLog.status, func.count(TaskLog.joblog_id))
+                .where(TaskLog.status == status)
+                .group_by(TaskLog.status)
+                .one_or_none()
+            )
+            if tmp:
+                return_data.append({"status": tmp[0], "count": tmp[1]})
+            else:
+                return_data.append({"status": status, "count": 0})
+    return return_data
 
 
 @router.get("/{task_id}")
