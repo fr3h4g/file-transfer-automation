@@ -25,6 +25,9 @@ def test_db_setup():
 
 def test_ftp_upload():
     """FTP upload test."""
+    with open("test.txt", "w") as file:
+        file.write("123åäö")
+
     host = Host(
         username="bob",
         password="12345",
@@ -65,3 +68,6 @@ def test_ftp_download():
         },
     )
     download.process()
+
+    with open("test.txt") as file:
+        assert file.read() == "123åäö"

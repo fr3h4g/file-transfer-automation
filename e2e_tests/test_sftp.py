@@ -21,6 +21,9 @@ def test_db_setup():
 
 def test_sftp_upload():
     """SFTP upload test."""
+    with open("test.txt", "w") as file:
+        file.write("123åäö")
+
     host = Host(
         username=USER,
         password=PASS,
@@ -61,3 +64,6 @@ def test_sftp_download():
         },
     )
     download.process()
+
+    with open("test.txt") as file:
+        assert file.read() == "123åäö"

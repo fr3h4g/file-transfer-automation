@@ -81,6 +81,7 @@ class Download(Plugin):
 
                     fo_data = io.BytesIO()
                     sftp.getfo(file, fo_data)
+                    fo_data.seek(0)
 
                     with open(os.path.join(workspace_directory, file), "wb") as to_file:
                         to_file.write(fo_data.read())

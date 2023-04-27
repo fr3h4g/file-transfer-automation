@@ -22,6 +22,9 @@ def test_db_setup():
 
 def test_smb_cifs_share_upload():
     """smb_cifs_share upload test."""
+    with open("test.txt", "w") as file:
+        file.write("123åäö")
+
     host = Host(username="bob", password="12345", share="\\\\localhost\\bob")
     download = Upload(
         arguments='{"file_filter":"test.txt", "delete_files":true}',
@@ -50,3 +53,6 @@ def test_smb_cifs_share_download():
         },
     )
     download.process()
+
+    with open("test.txt") as file:
+        assert file.read() == "123åäö"

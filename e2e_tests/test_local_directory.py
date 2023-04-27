@@ -15,8 +15,11 @@ def test_db_setup():
 
 def test_local_directory_upload():
     """local_directory upload test."""
+    with open("test.txt", "w") as file:
+        file.write("123åäö")
+
     host = Host(
-        directory="./test-output",
+        directory=".",
     )
     download = UploadFiles(
         arguments='{"file_filter":"test.txt", "delete_files":false}',
@@ -34,7 +37,7 @@ def test_local_directory_upload():
 def test_local_directory_download():
     """local_directory download test."""
     host = Host(
-        directory="./test-input",
+        directory=".",
     )
     download = DownloadFiles(
         arguments='{"file_filter":"test.txt", "delete_files":false}',
@@ -47,3 +50,6 @@ def test_local_directory_download():
         },
     )
     download.process()
+
+    with open("test.txt") as file:
+        assert file.read() == "123åäö"
