@@ -92,7 +92,7 @@ def run_task(task_id: int):
                         f"--- Step '{plugin.name.lower()}' done, output {variables=}."
                     )
                 if variables["error"]:
-                    logging.debug(
+                    logging.error(
                         f"Error in step {step.step_id}, '{plugin.name.lower()}', "
                         f"message: '{variables['error_message']}'."
                     )
