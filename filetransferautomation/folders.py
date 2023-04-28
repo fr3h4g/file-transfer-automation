@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import os
 
-from fastapi import APIRouter, UploadFile
+from fastapi import APIRouter, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 
 from filetransferautomation import models, settings
@@ -49,7 +49,7 @@ def get_files(id: int):
     """List files in folder."""
     folder = get_folder(id)
     if not folder:
-        return {"details": "folder not found."}
+        raise HTTPException(status_code=404, detail="folder not found")
     files = os.listdir(os.path.join(settings.FOLDERS_DIR, folder.name))
     return files
 
@@ -59,7 +59,7 @@ async def create_upload_files(id: int, files: list[UploadFile]):
     """Upload files to a folder."""
     folder = get_folder(id)
     if not folder:
-        return {"details": "folder not found."}
+        raise HTTPException(status_code=404, detail="folder not found")
 
     for file in files:
         if file.filename:
@@ -76,7 +76,7 @@ async def download_file(id: int, filename: str):
     """Download a file from folder."""
     folder = get_folder(id)
     if not folder:
-        return {"error": "folder not found."}
+        raise HTTPException(status_code=404, detail="folder not found")
     return FileResponse(
         path=os.path.join(settings.FOLDERS_DIR, folder.name, filename),
         filename=filename,
