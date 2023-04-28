@@ -138,3 +138,15 @@ class Host(Base):
     username: Mapped[str | None] = mapped_column(String(100), default=None)
     password: Mapped[str | None] = mapped_column(String(100), default=None)
     description: Mapped[str | None] = mapped_column(String(255), default=None)
+
+
+class Folder(Base):
+    """Table hosts model."""
+
+    __tablename__ = "folders"
+
+    folder_id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, index=True, unique=True, autoincrement=True
+    )
+    name: Mapped[str] = mapped_column(String(100))
+    description: Mapped[str | None] = mapped_column(String(255), default=None)

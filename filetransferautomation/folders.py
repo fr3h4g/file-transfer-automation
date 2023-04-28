@@ -6,40 +6,42 @@ import os
 from fastapi import APIRouter, UploadFile
 from fastapi.responses import FileResponse
 
-from filetransferautomation import settings
-from filetransferautomation.shemas import Folder
+from filetransferautomation import models, settings
+from filetransferautomation.database import SessionLocal
+from filetransferautomation.shemas import Folder as FolderSchema
 
 router = APIRouter()
-
-FOLDERS = []
 
 
 def load_folders():
     """Load folders from database."""
-    global FOLDERS
-    FOLDERS.append(Folder(folder_id=1, name="test"))
+    with SessionLocal() as db:
+        folders = db.query(models.Folder).all()
 
-    for folder in FOLDERS:
+    for folder in folders:
         path = os.path.join(settings.FOLDERS_DIR, folder.name)
         if not os.path.exists(path):
             os.makedirs(path)
-
-    return FOLDERS
+    return folders
 
 
 @router.get("")
 def list_folders():
     """List folders."""
-    return FOLDERS
+    with SessionLocal() as db:
+        folders = db.query(models.Folder).all()
+    return folders
 
 
 @router.get("/{id}")
-def get_folder(id: int) -> Folder | None:
+def get_folder(id: int) -> FolderSchema | None:
     """Get a folder."""
-    for folder in FOLDERS:
-        if folder.folder_id == id:
-            return folder
-    return None
+    folder = None
+    with SessionLocal() as db:
+        folder = (
+            db.query(models.Folder).filter(models.Folder.folder_id == id).one_or_none()
+        )
+    return folder
 
 
 @router.get("/{id}/files")
@@ -50,16 +52,6 @@ def get_files(id: int):
         return {"details": "folder not found."}
     files = os.listdir(os.path.join(settings.FOLDERS_DIR, folder.name))
     return files
-
-
-# @router.post("")
-# def create_folder(folder_name: str):
-#     pass
-
-
-# @router.delete("/{id}")
-# def delete_folder(id: str):
-#     pass
 
 
 @router.post("/{id}/uploadfiles")

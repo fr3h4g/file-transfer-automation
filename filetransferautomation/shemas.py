@@ -14,6 +14,7 @@ class Folder:
 
     folder_id: int
     name: str
+    description: str
 
 
 @dataclass
