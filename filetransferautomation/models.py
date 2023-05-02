@@ -51,6 +51,27 @@ class TaskLog(Base):
     duration_sec: Mapped[float | None] = mapped_column(Float, default=None)
 
 
+class StepLog(Base):
+    """Table task log model."""
+
+    __tablename__ = "step_log"
+
+    steplog_id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, index=True, unique=True, autoincrement=True
+    )
+    task_id: Mapped[int] = mapped_column(Integer)
+    task_run_id: Mapped[str] = mapped_column(String(50))
+    step_id: Mapped[int] = mapped_column(Integer)
+    start_time: Mapped[datetime.datetime] = mapped_column(DateTime)
+    end_time: Mapped[datetime.datetime] = mapped_column(
+        DateTime, nullable=True, default=None
+    )
+    status: Mapped[
+        Literal["running"] | Literal["error"] | Literal["success"]
+    ] = mapped_column(String(30))
+    duration_sec: Mapped[float | None] = mapped_column(Float, default=None)
+
+
 class Schedule(Base):
     """Table schedule model."""
 

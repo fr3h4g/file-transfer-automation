@@ -14,7 +14,7 @@ from sqlalchemy.sql.functions import func
 from filetransferautomation import models, settings, shemas
 from filetransferautomation.database import SessionLocal
 from filetransferautomation.hosts import get_host
-from filetransferautomation.logs import add_task_log_entry
+from filetransferautomation.logs import add_step_log_entry, add_task_log_entry
 from filetransferautomation.models import Task, TaskLog
 from filetransferautomation.plugin_collection import PluginCollection
 
@@ -123,6 +123,13 @@ def run_task(task_id: int):
 
 def run_step_process(global_variables, variables, step, plugin):
     """Run plugin for step in task."""
+    add_step_log_entry(
+        global_variables["workspace_id"],
+        global_variables["task_id"],
+        step.step_id,
+        "running",
+    )
+
     logging.debug(
         f"--- Running step '{plugin.name.lower()}', "
         f"input arguments={step.arguments}, {variables=}."
@@ -134,6 +141,13 @@ def run_step_process(global_variables, variables, step, plugin):
     except Exception as exc:
         variables["error"] = True
         variables["error_message"] = exc
+
+    add_step_log_entry(
+        global_variables["workspace_id"],
+        global_variables["task_id"],
+        step.step_id,
+        "error" if variables["error"] else "success",
+    )
     logging.debug(f"--- Step '{plugin.name.lower()}' done, output {variables=}.")
 
     return variables

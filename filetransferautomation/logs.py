@@ -5,7 +5,7 @@ from typing import Literal
 from fastapi import APIRouter
 
 from filetransferautomation.database import SessionLocal
-from filetransferautomation.models import FileLog, TaskLog
+from filetransferautomation.models import FileLog, StepLog, TaskLog
 from filetransferautomation.shemas import File
 
 router = APIRouter()
@@ -102,6 +102,40 @@ def add_task_log_entry(
         db_task_log = TaskLog(
             task_run_id=task_run_id,
             task_id=task_id,
+            status=status,
+            start_time=timestamp,
+        )
+        db.add(db_task_log)
+        db.commit()
+
+
+def add_step_log_entry(
+    task_run_id: str,
+    task_id: int,
+    step_id: int,
+    status: Literal["running"] | Literal["error"] | Literal["success"],
+):
+    """Add s log entry."""
+    timestamp = datetime.datetime.now()
+
+    with SessionLocal() as db:
+        db_task_log = (
+            db.query(StepLog)
+            .filter(StepLog.task_run_id == task_run_id, StepLog.step_id == step_id)
+            .one_or_none()
+        )
+        if db_task_log:
+            db_task_log.end_time = timestamp
+            db_task_log.status = status
+            db_task_log.duration_sec = (
+                timestamp - db_task_log.start_time
+            ).total_seconds()
+            db.commit()
+            return None
+        db_task_log = StepLog(
+            task_run_id=task_run_id,
+            task_id=task_id,
+            step_id=step_id,
             status=status,
             start_time=timestamp,
         )

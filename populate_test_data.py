@@ -43,15 +43,6 @@ with SessionLocal() as db:
     )
     sql.append(
         models.Step(
-            sort_order=10,
-            step_id=1,
-            task_id=1,
-            script="workspace_create",
-            arguments="{}",
-        )
-    )
-    sql.append(
-        models.Step(
             sort_order=20,
             step_id=2,
             task_id=1,
@@ -68,15 +59,6 @@ with SessionLocal() as db:
             host_id=2,
             script="local_directory_upload_files",
             arguments='{"file_filter":"*.txt"}',
-        )
-    )
-    sql.append(
-        models.Step(
-            sort_order=40,
-            step_id=4,
-            task_id=1,
-            script="workspace_delete",
-            arguments="{}",
         )
     )
     sql.append(models.Task(task_id=1, name="test", description="", active=1))
