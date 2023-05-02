@@ -6,6 +6,8 @@ import logging
 import os
 import threading
 import uuid
+import shutil
+
 
 from fastapi import APIRouter, HTTPException
 from sqlalchemy.sql.functions import func
@@ -54,6 +56,11 @@ def run_task(task_id: int):
         logging.debug(f"{global_variables=}")
 
         variables = {}
+
+        os.mkdir(global_variables["workspace_directory"])
+        logging.info(
+            f"Created workspace directory '{global_variables['workspace_directory']}'."
+        )
 
         for step in task.steps:
             host = None
@@ -104,6 +111,13 @@ def run_task(task_id: int):
                 break
             if error:
                 break
+
+        if not error:
+            shutil.rmtree(global_variables["workspace_directory"])
+            logging.info(
+                f"Deleted workspace directory '{global_variables['workspace_directory']}'."
+            )
+
         if error:
             logging.error(
                 f"Error in task '{task.name}', id: {task.task_id}, "
