@@ -80,27 +80,16 @@ def run_task(task_id: int):
                     )
                 elif step.script.lower() == plugin.name.lower():
                     plugin_found = True
-                    logging.debug(
-                        f"--- Running step '{plugin.name.lower()}', "
-                        f"input arguments={step.arguments}, {variables=}."
+                    variables = run_step_process(
+                        global_variables, variables, step, plugin
                     )
-                    try:
-                        tmp = plugin(step.arguments, {**variables, **global_variables})
-                        tmp.process()
-                        variables = tmp.variables
-                    except Exception as exc:
-                        variables["error"] = True
-                        variables["error_message"] = exc
-                    logging.debug(
-                        f"--- Step '{plugin.name.lower()}' done, output {variables=}."
-                    )
-                if variables["error"]:
-                    logging.error(
-                        f"Error in step {step.step_id}, '{plugin.name.lower()}', "
-                        f"message: '{variables['error_message']}'."
-                    )
-                    error = True
-                    break
+                    if variables["error"]:
+                        logging.error(
+                            f"Error in step {step.step_id}, '{plugin.name.lower()}', "
+                            f"message: '{variables['error_message']}'."
+                        )
+                        error = True
+                        break
             if not plugin_found:
                 logging.error(f"Plugin script '{step.script.lower()}' not found.")
                 error = True
@@ -130,6 +119,24 @@ def run_task(task_id: int):
 
     else:
         logging.error(f"Task id: {task.task_id}, not found.")
+
+
+def run_step_process(global_variables, variables, step, plugin):
+    """Run plugin for step in task."""
+    logging.debug(
+        f"--- Running step '{plugin.name.lower()}', "
+        f"input arguments={step.arguments}, {variables=}."
+    )
+    try:
+        tmp = plugin(step.arguments, {**variables, **global_variables})
+        tmp.process()
+        variables = tmp.variables
+    except Exception as exc:
+        variables["error"] = True
+        variables["error_message"] = exc
+    logging.debug(f"--- Step '{plugin.name.lower()}' done, output {variables=}.")
+
+    return variables
 
 
 def workspace_directory_files(global_variables) -> list:
