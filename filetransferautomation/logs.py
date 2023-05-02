@@ -8,6 +8,8 @@ from filetransferautomation.database import SessionLocal
 from filetransferautomation.models import FileLog, StepLog, TaskLog
 from filetransferautomation.shemas import File
 
+from sqlalchemy import func
+
 router = APIRouter()
 
 # class TaskLog(BaseModel):
@@ -147,10 +149,22 @@ def add_step_log_entry(
 def get_files_log(limit: int = 100):
     """Get all file log entrys."""
     with SessionLocal() as db:
-        db_file_log = (
-            db.query(FileLog)
+        tmp = (
+            db.query(func.max(FileLog.filelog_id))
+            .group_by(
+                FileLog.task_run_id, FileLog.task_id, FileLog.step_id, FileLog.file_name
+            )
             .order_by(FileLog.filelog_id.desc())
             .limit(limit=limit)
+            .all()
+        )
+        latest_file_ids = []
+        for row in tmp:
+            latest_file_ids.append(row[0])
+        db_file_log = (
+            db.query(FileLog)
+            .where(FileLog.filelog_id.in_(latest_file_ids))
+            .order_by(FileLog.filelog_id.desc())
             .all()
         )
         return db_file_log
