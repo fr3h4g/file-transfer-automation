@@ -57,10 +57,7 @@ def run_task(task_id: int):
 
         variables = {}
 
-        os.mkdir(global_variables["workspace_directory"])
-        logging.info(
-            f"Created workspace directory '{global_variables['workspace_directory']}'."
-        )
+        create_workspace_directory(global_variables)
 
         for step in task.steps:
             host = None
@@ -113,10 +110,7 @@ def run_task(task_id: int):
                 break
 
         if not error:
-            shutil.rmtree(global_variables["workspace_directory"])
-            logging.info(
-                f"Deleted workspace directory '{global_variables['workspace_directory']}'."
-            )
+            delete_workspace_directory(global_variables)
 
         if error:
             logging.error(
@@ -137,6 +131,22 @@ def run_task(task_id: int):
 
     else:
         logging.error(f"Task id: {task.task_id}, not found.")
+
+
+def delete_workspace_directory(global_variables):
+    """Delete the workspace directory."""
+    shutil.rmtree(global_variables["workspace_directory"])
+    logging.info(
+        f"Deleted workspace directory '{global_variables['workspace_directory']}'."
+    )
+
+
+def create_workspace_directory(global_variables):
+    """Create the workspace directory."""
+    os.mkdir(global_variables["workspace_directory"])
+    logging.info(
+        f"Created workspace directory '{global_variables['workspace_directory']}'."
+    )
 
 
 def run_task_threaded(task: int):
