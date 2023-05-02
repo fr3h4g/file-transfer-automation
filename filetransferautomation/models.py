@@ -85,10 +85,6 @@ class Schedule(Base):
 
     scheduler_job_id: Mapped[int | None] = mapped_column(Integer, default=None)
 
-    def __repr__(self):
-        """Table repr."""
-        return f"Schedule({self.schedule_id!r}, {self.task_id!r}, {self.cron!r})"
-
 
 class Task(Base):
     """Table tasks model."""
@@ -101,10 +97,6 @@ class Task(Base):
     name: Mapped[str] = mapped_column(String(100))
     description: Mapped[str] = mapped_column(String(255))
     active: Mapped[int] = mapped_column(Integer)
-
-    def __repr__(self):
-        """Table repr."""
-        return f"Task(steps={self.steps!r}, schedules={self.schedules!r}"
 
 
 class Step(Base):
@@ -121,10 +113,6 @@ class Step(Base):
     script: Mapped[str | None] = mapped_column(String(100), default=None)
     arguments: Mapped[str | None] = mapped_column(String(255), default=None)
     active: Mapped[int] = mapped_column(Integer, default=1)
-
-    def __repr__(self):
-        """Table repr."""
-        return f"Step({self.step_id}, ...)"
 
 
 # class Process(Base):
