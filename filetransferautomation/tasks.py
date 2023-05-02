@@ -108,7 +108,7 @@ def run_task(task_id: int):
             if error:
                 break
 
-        if not error:
+        if not error or (error and not workspace_directory_files(global_variables)):
             delete_workspace_directory(global_variables)
 
         if error:
@@ -130,6 +130,12 @@ def run_task(task_id: int):
 
     else:
         logging.error(f"Task id: {task.task_id}, not found.")
+
+
+def workspace_directory_files(global_variables) -> list:
+    """List all files in workspace directory."""
+    files = os.listdir(global_variables["workspace_directory"])
+    return files
 
 
 def delete_workspace_directory(global_variables):
