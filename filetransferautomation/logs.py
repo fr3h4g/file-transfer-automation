@@ -3,7 +3,8 @@ import datetime
 from typing import Literal
 
 from fastapi import APIRouter
-from sqlalchemy import func
+from sqlalchemy import and_, func
+from sqlalchemy.orm import aliased
 
 from filetransferautomation.database import SessionLocal
 from filetransferautomation.human_bytes import HumanBytes
@@ -204,6 +205,8 @@ def get_steps_log(limit: int = 30, task_run_id: str = ""):
 def get_tasks_log(limit: int = 30, status: str = ""):
     """Get all tasks log entrys."""
     with SessionLocal() as db:
+        filelog1 = aliased(FileLog)
+        filelog2 = aliased(FileLog)
         db_task_log = (
             db.query(
                 TaskLog.task_run_id,
@@ -212,9 +215,26 @@ def get_tasks_log(limit: int = 30, status: str = ""):
                 TaskLog.end_time,
                 TaskLog.status,
                 Task.name,
+                func.count(filelog1.filelog_id).label("downloaded_files"),
+                func.count(filelog2.filelog_id).label("uploaded_files"),
             )
             .join(Task, Task.task_id == TaskLog.task_id)
+            .join(
+                filelog1,
+                and_(
+                    filelog1.task_run_id == TaskLog.task_run_id,
+                    filelog1.status == "downloaded",
+                ),
+            )
+            .join(
+                filelog2,
+                and_(
+                    filelog2.task_run_id == TaskLog.task_run_id,
+                    filelog2.status == "uploaded",
+                ),
+            )
             .order_by(TaskLog.joblog_id.desc())
+            .group_by(TaskLog.task_run_id)
         )
         if status:
             db_task_log = db_task_log.where(TaskLog.status == status)
