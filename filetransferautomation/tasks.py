@@ -207,7 +207,7 @@ async def get_status():
                     .where(
                         and_(
                             TaskLog.status == "success",
-                            FileLog.filelog_id == None,  # noqa: E711
+                            FileLog.filelog_id.is_(None),
                         )
                     )
                     .group_by(TaskLog.status)

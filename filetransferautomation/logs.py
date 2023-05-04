@@ -235,7 +235,9 @@ def get_tasks_log(limit: int = 30, status: str = ""):
                 ),
                 isouter=True,
             )
-            .where(or_(filelog1.task_run_id, filelog2.task_run_id))
+            .where(
+                or_(filelog1.task_run_id.isnot(None), filelog2.task_run_id.isnot(None))
+            )
             .order_by(TaskLog.joblog_id.desc())
             .group_by(TaskLog.task_run_id)
         )
