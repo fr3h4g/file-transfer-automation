@@ -215,16 +215,17 @@ def get_tasks_log(limit: int = 30, status: str = ""):
                 TaskLog.end_time,
                 TaskLog.status,
                 Task.name,
-                func.count(filelog1.filelog_id).label("downloaded_files"),
-                func.count(filelog2.filelog_id).label("uploaded_files"),
+                func.count(filelog1.filelog_id.distinct()).label("downloaded_files"),
+                func.count(filelog2.filelog_id.distinct()).label("uploaded_files"),
             )
-            .join(Task, Task.task_id == TaskLog.task_id)
+            .join(Task, Task.task_id == TaskLog.task_id, isouter=True)
             .join(
                 filelog1,
                 and_(
                     filelog1.task_run_id == TaskLog.task_run_id,
                     filelog1.status == "downloaded",
                 ),
+                isouter=True,
             )
             .join(
                 filelog2,
@@ -232,6 +233,7 @@ def get_tasks_log(limit: int = 30, status: str = ""):
                     filelog2.task_run_id == TaskLog.task_run_id,
                     filelog2.status == "uploaded",
                 ),
+                isouter=True,
             )
             .order_by(TaskLog.joblog_id.desc())
             .group_by(TaskLog.task_run_id)
@@ -246,32 +248,3 @@ def get_tasks_log(limit: int = 30, status: str = ""):
             del tmp["duration_sec"]
             return_data.append(tmp)
         return return_data
-
-
-# @router.get("/tasks/{task_run_id}")
-# def get_task_log(task_run_id: str):
-#     """Get a task log entry."""
-#     with SessionLocal() as db:
-#         db_task_log = (
-#             db.query(TaskLog).filter(TaskLog.task_run_id == task_run_id).one_or_none()
-#         )
-#         if db_task_log:
-#             db_files_download_log = (
-#                 db.query(FileLog)
-#                 .filter(
-#                     FileLog.task_run_id == task_run_id,
-#                     FileLog.status == "downloaded",
-#                 )
-#                 .all()
-#             )
-#             db_files_upload_log = (
-#                 db.query(FileLog)
-#                 .filter(
-#                     FileLog.task_run_id == task_run_id,
-#                     FileLog.status == "uploaded",
-#                 )
-#                 .all()
-#             )
-#             db_task_log.files_downloaded = db_files_download_log
-#             db_task_log.files_uploaded = db_files_upload_log
-#         return db_task_log
