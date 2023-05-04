@@ -129,7 +129,11 @@ def get_files_log(limit: int = 30, task_run_id: str = ""):
         latest_file_ids = []
         for row in tmp:
             latest_file_ids.append(row[0])
-        db_file_log = db.query(FileLog).where(FileLog.filelog_id.in_(latest_file_ids))
+        db_file_log = (
+            db.query(FileLog, Task.name)
+            .join(Task, Task.task_id == FileLog.task_id)
+            .where(FileLog.filelog_id.in_(latest_file_ids))
+        )
         if task_run_id:
             db_file_log = db_file_log.where(
                 FileLog.task_run_id == task_run_id
@@ -139,7 +143,9 @@ def get_files_log(limit: int = 30, task_run_id: str = ""):
         db_file_log = db_file_log.all()
         return_data = []
         for row in db_file_log:
-            tmp = row.__dict__
+            tmp = dict(row._mapping.items())
+            tmp = {**tmp["FileLog"].__dict__, **tmp}
+            del tmp["FileLog"]
             tmp["speed"] = (
                 HumanBytes.format(float(tmp["bytes_per_sec"]), metric=True) + "/sec"
             )
