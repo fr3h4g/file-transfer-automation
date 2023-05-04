@@ -3,7 +3,7 @@ import datetime
 from typing import Literal
 
 from fastapi import APIRouter
-from sqlalchemy import and_, func
+from sqlalchemy import and_, func, or_
 from sqlalchemy.orm import aliased
 
 from filetransferautomation.database import SessionLocal
@@ -235,6 +235,7 @@ def get_tasks_log(limit: int = 30, status: str = ""):
                 ),
                 isouter=True,
             )
+            .where(or_(filelog1.task_run_id, filelog2.task_run_id))
             .order_by(TaskLog.joblog_id.desc())
             .group_by(TaskLog.task_run_id)
         )
