@@ -153,7 +153,9 @@ def get_files_log(limit: int = 30, task_run_id: str = ""):
             tmp["size"] = HumanBytes.format(
                 float(tmp["size"]), metric=True, precision=3
             )
-            tmp["duration"] = human_seconds(tmp["duration_sec"])
+            tmp["duration"] = ""
+            if tmp["duration_sec"]:
+                tmp["duration"] = human_seconds(tmp["duration_sec"])
             del tmp["bytes_per_sec"]
             del tmp["duration_sec"]
             return_data.append(tmp)
