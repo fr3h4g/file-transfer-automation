@@ -22,3 +22,5 @@ if DEV_MODE:
     DATABASE_URL = "sqlite:///test.db"
 
 DATABASE_URL = str(os.getenv("DATABASE_URL", DATABASE_URL))
+
+DISABLE_JOBS: bool = bool(os.getenv("DISABLE_JOBS", False))

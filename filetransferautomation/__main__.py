@@ -108,9 +108,9 @@ async def startup():
     folders_data = folders.load_folders()
     logging.info(f"{len(folders_data)} folders loaded.")
 
-    await load_jobs()
-
-    asyncio.ensure_future(run_schedules())
+    if not settings.DISABLE_JOBS:
+        await load_jobs()
+        asyncio.ensure_future(run_schedules())
 
 
 def get_arguments() -> argparse.Namespace:
