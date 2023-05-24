@@ -99,34 +99,35 @@ class SendFiles(Plugin):
             if compare_filter(file, self.arguments.file_filter):
                 files_to_mail.append(file)
 
-        send_mail(
-            self.arguments.from_address,
-            self.arguments.to_addresses,
-            self.arguments.subject,
-            self.arguments.body,
-            files_to_mail,
-        )
-
-        for file in files_to_mail:
-            mailed_files.append(file)
-            size = os.path.getsize(os.path.join(workspace_directory, file))
-
-            add_file_log_entry(
-                task_run_id=self.get_variable("workspace_id"),
-                task_id=self.get_variable("task_id"),
-                step_id=self.get_variable("step_id"),
-                filename=file,
-                status="mailed",
-                filesize=size,
+        if files_to_mail:
+            send_mail(
+                self.arguments.from_address,
+                self.arguments.to_addresses,
+                self.arguments.subject,
+                self.arguments.body,
+                files_to_mail,
             )
 
-        logging.info(
-            f"Mailed files {mailed_files} to: '{self.arguments.to_addresses}'."
-        )
+            for file in files_to_mail:
+                mailed_files.append(file)
+                size = os.path.getsize(os.path.join(workspace_directory, file))
 
-        if self.arguments.delete_files:
-            for file in mailed_files:
-                os.remove(os.path.join(workspace_directory, file))
+                add_file_log_entry(
+                    task_run_id=self.get_variable("workspace_id"),
+                    task_id=self.get_variable("task_id"),
+                    step_id=self.get_variable("step_id"),
+                    filename=file,
+                    status="mailed",
+                    filesize=size,
+                )
+
+            logging.info(
+                f"Mailed files {mailed_files} to: '{self.arguments.to_addresses}'."
+            )
+
+            if self.arguments.delete_files:
+                for file in mailed_files:
+                    os.remove(os.path.join(workspace_directory, file))
 
         self.set_variable("found_files", files)
         self.set_variable("matched_files", files_to_mail)
