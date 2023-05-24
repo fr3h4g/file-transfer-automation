@@ -41,6 +41,7 @@ def send_mail(
     send_to: list[str],
     subject: str,
     message: str,
+    workspace_directory: str,
     files: list[str] = [],
 ):
     """Send mail."""
@@ -52,7 +53,8 @@ def send_mail(
 
     msg.attach(MIMEText(message))
 
-    for path in files:
+    for file in files:
+        path = os.path.join(workspace_directory, file)
         part = MIMEBase("application", "octet-stream")
         with open(path, "rb") as file:
             part.set_payload(file.read())
@@ -105,6 +107,7 @@ class SendFiles(Plugin):
                 self.arguments.to_addresses,
                 self.arguments.subject,
                 self.arguments.body,
+                workspace_directory,
                 files_to_mail,
             )
 
