@@ -44,6 +44,10 @@ class Download(Plugin):
             host = get_host(self.get_variable("host_id"))
         if not host:
             return None
+        if not self.arguments.file_filter:
+            raise ValueError("argument file_filter can't be empty.")
+        if self.arguments.delete_files not in (True, False):
+            raise ValueError("argument delete_files must be True or False.")
 
         workspace_directory = self.get_variable("workspace_directory")
         files_to_download = []
@@ -127,6 +131,10 @@ class Upload(Plugin):
             host = get_host(self.get_variable("host_id"))
         if not host:
             return None
+        if not self.arguments.file_filter:
+            raise ValueError("argument file_filter can't be empty.")
+        if self.arguments.delete_files not in (True, False):
+            raise ValueError("argument delete_files must be True or False.")
 
         workspace_directory = self.get_variable("workspace_directory")
         files_to_upload = []

@@ -88,13 +88,17 @@ class SendFiles(Plugin):
         mailed_files = []
 
         if not self.arguments.from_address:
-            return None
+            raise ValueError("argument from_address can't be empty.")
         if not self.arguments.to_addresses:
-            return None
+            raise ValueError("argument to_addresses can't be empty.")
         if not self.arguments.subject:
-            return None
+            raise ValueError("argument subject can't be empty.")
         if not self.arguments.body:
-            return None
+            raise ValueError("argument body can't be empty.")
+        if not self.arguments.file_filter:
+            raise ValueError("argument file_filter can't be empty.")
+        if self.arguments.delete_files not in (True, False):
+            raise ValueError("argument delete_files must be True or False.")
 
         files = os.listdir(workspace_directory)
         for file in files:
