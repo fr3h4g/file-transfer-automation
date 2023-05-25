@@ -4,7 +4,7 @@ from __future__ import annotations
 import datetime
 from typing import Literal
 
-from sqlalchemy import BigInteger, DateTime, Float, Integer, String
+from sqlalchemy import BigInteger, DateTime, Float, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .database import Base
@@ -111,7 +111,7 @@ class Step(Base):
     task_id: Mapped[int] = mapped_column(Integer)
     host_id: Mapped[int | None] = mapped_column(Integer, default=None)
     script: Mapped[str | None] = mapped_column(String(100), default=None)
-    arguments: Mapped[str | None] = mapped_column(String(255), default=None)
+    arguments: Mapped[Text | None] = mapped_column(Text, default=None)
     active: Mapped[int] = mapped_column(Integer, default=1)
 
 
