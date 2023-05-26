@@ -147,9 +147,11 @@ def get_files_log(limit: int = 30, task_run_id: str = ""):
             tmp = dict(row._mapping.items())
             tmp = {**tmp["FileLog"].__dict__, **tmp}
             del tmp["FileLog"]
-            tmp["speed"] = (
-                HumanBytes.format(float(tmp["bytes_per_sec"]), metric=True) + "/sec"
-            )
+            tmp["speed"] = ""
+            if tmp["bytes_per_sec"]:
+                tmp["speed"] = (
+                    HumanBytes.format(float(tmp["bytes_per_sec"]), metric=True) + "/sec"
+                )
             tmp["size"] = HumanBytes.format(
                 float(tmp["size"]), metric=True, precision=3
             )
@@ -233,7 +235,10 @@ def get_tasks_log(limit: int = 30, status: str = ""):
                 filelog2,
                 and_(
                     filelog2.task_run_id == TaskLog.task_run_id,
-                    filelog2.status == "uploaded",
+                    or_(
+                        filelog2.status == "uploaded",
+                        filelog2.status == "mailed",
+                    ),
                 ),
                 isouter=True,
             )
