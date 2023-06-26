@@ -141,7 +141,6 @@ class Upload(Plugin):
         uploaded_files = []
 
         if host:
-            smbclient.ClientConfig(username=host.username, password=host.password)
             files = os.listdir(workspace_directory)
             for file in files:
                 if compare_filter(file, self.arguments.file_filter):
@@ -159,8 +158,14 @@ class Upload(Plugin):
             start_time = time.time()
             with open(os.path.join(workspace_directory, file), "rb") as from_file:
                 file_data = from_file.read()
-            with smbclient.open_file(unc_path_join(host.share, file), "wb") as to_file:
-                to_file.write(file_data)  # type: ignore
+
+                smbclient.ClientConfig(username=host.username, password=host.password)
+                with smbclient.open_file(
+                    unc_path_join(host.share, file), "wb"
+                ) as to_file:
+                    to_file.write(file_data)  # type: ignore
+                smbclient.reset_connection_cache()
+
             uploaded_files.append(file)
             size = os.path.getsize(os.path.join(workspace_directory, file))
             duration = time.time() - start_time
@@ -181,8 +186,6 @@ class Upload(Plugin):
         if self.arguments.delete_files:
             for file in uploaded_files:
                 os.remove(os.path.join(workspace_directory, file))
-
-        smbclient.reset_connection_cache()
 
         self.set_variable("found_files", files)
         self.set_variable("matched_files", files_to_upload)
