@@ -200,7 +200,7 @@ def get_steps_log(limit: int = 30, task_run_id: str = ""):
         return_data = []
         for row in db_task_log:
             tmp = dict(row._mapping.items())
-            if tmp["duration"]:
+            if "duration" in tmp and tmp["duration"]:
                 tmp["duration"] = human_seconds(tmp["duration_sec"])
             del tmp["duration_sec"]
             return_data.append(tmp)
