@@ -152,9 +152,10 @@ def get_files_log(limit: int = 30, task_run_id: str = ""):
                 tmp["speed"] = (
                     HumanBytes.format(float(tmp["bytes_per_sec"]), metric=True) + "/sec"
                 )
-            tmp["size"] = HumanBytes.format(
-                float(tmp["size"]), metric=True, precision=3
-            )
+            if tmp["size"]:
+                tmp["size"] = HumanBytes.format(
+                    float(tmp["size"]), metric=True, precision=3
+                )
             tmp["duration"] = ""
             if tmp["duration_sec"]:
                 tmp["duration"] = human_seconds(tmp["duration_sec"])
@@ -199,7 +200,8 @@ def get_steps_log(limit: int = 30, task_run_id: str = ""):
         return_data = []
         for row in db_task_log:
             tmp = dict(row._mapping.items())
-            tmp["duration"] = human_seconds(tmp["duration_sec"])
+            if tmp["duration"]:
+                tmp["duration"] = human_seconds(tmp["duration_sec"])
             del tmp["duration_sec"]
             return_data.append(tmp)
         return return_data
