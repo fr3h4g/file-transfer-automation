@@ -81,6 +81,7 @@ class Download(Plugin):
                         status="downloading",
                     )
 
+                for file in files_to_download:
                     start_time = time.time()
 
                     fo_data = io.BytesIO()
@@ -168,6 +169,7 @@ class Upload(Plugin):
                         status="uploading",
                     )
 
+                for file in files_to_upload:
                     start_time = time.time()
                     with open(
                         os.path.join(workspace_directory, file), "rb"
