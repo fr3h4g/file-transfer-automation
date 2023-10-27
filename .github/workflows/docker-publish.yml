@@ -33,7 +33,7 @@ jobs:
           pip install ruff pytest coverage
       - name: Lint with ruff
         run: |
-          ruff --format=github .
+          ruff .
       - name: Test with pytest
         run: |
           coverage erase
