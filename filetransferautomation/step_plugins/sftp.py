@@ -38,6 +38,9 @@ class Download(Plugin):
 
     def process(self):
         """Download file from SFTP."""
+
+        error = False
+
         if "host" in self.variables:
             host = self.get_variable("host")
         else:
@@ -82,29 +85,41 @@ class Download(Plugin):
                     )
 
                 for file in files_to_download:
-                    start_time = time.time()
+                    try:
+                        start_time = time.time()
 
-                    fo_data = io.BytesIO()
-                    sftp.getfo(file, fo_data)
-                    fo_data.seek(0)
+                        fo_data = io.BytesIO()
+                        sftp.getfo(file, fo_data)
+                        fo_data.seek(0)
 
-                    with open(os.path.join(workspace_directory, file), "wb") as to_file:
-                        to_file.write(fo_data.read())
+                        with open(
+                            os.path.join(workspace_directory, file), "wb"
+                        ) as to_file:
+                            to_file.write(fo_data.read())
+                    except Exception:
+                        add_file_log_entry(
+                            task_run_id=self.get_variable("workspace_id"),
+                            task_id=self.get_variable("task_id"),
+                            step_id=self.get_variable("step_id"),
+                            filename=file,
+                            status="error",
+                        )
+                        error = True
+                    else:
+                        downloaded_files.append(file)
+                        size = os.path.getsize(os.path.join(workspace_directory, file))
+                        duration = time.time() - start_time
 
-                    downloaded_files.append(file)
-                    size = os.path.getsize(os.path.join(workspace_directory, file))
-                    duration = time.time() - start_time
-
-                    add_file_log_entry(
-                        task_run_id=self.get_variable("workspace_id"),
-                        task_id=self.get_variable("task_id"),
-                        step_id=self.get_variable("step_id"),
-                        filename=file,
-                        status="downloaded",
-                        duration_sec=duration,
-                        filesize=size,
-                        bytes_per_sec=size / duration,
-                    )
+                        add_file_log_entry(
+                            task_run_id=self.get_variable("workspace_id"),
+                            task_id=self.get_variable("task_id"),
+                            step_id=self.get_variable("step_id"),
+                            filename=file,
+                            status="downloaded",
+                            duration_sec=duration,
+                            filesize=size,
+                            bytes_per_sec=size / duration,
+                        )
 
                 if self.arguments.delete_files:
                     for file in downloaded_files:
@@ -116,6 +131,9 @@ class Download(Plugin):
         self.set_variable("matched_files", files_to_download)
         self.set_variable("downloaded_files", downloaded_files)
 
+        if error:
+            raise Exception("error in file transfer")
+
 
 class Upload(Plugin):
     """Upload file to SFTP."""
@@ -126,6 +144,9 @@ class Upload(Plugin):
 
     def process(self):
         """Upload file to SFTP."""
+
+        error = False
+
         if "host" in self.variables:
             host = self.get_variable("host")
         else:
@@ -170,36 +191,46 @@ class Upload(Plugin):
                     )
 
                 for file in files_to_upload:
-                    start_time = time.time()
-                    with open(
-                        os.path.join(workspace_directory, file), "rb"
-                    ) as from_file:
-                        if not host.directory:
-                            host.directory = "."
-                        filename = str(os.path.join(host.directory, file)) + ".tmp"
+                    try:
+                        start_time = time.time()
+                        with open(
+                            os.path.join(workspace_directory, file), "rb"
+                        ) as from_file:
+                            if not host.directory:
+                                host.directory = "."
+                            filename = str(os.path.join(host.directory, file)) + ".tmp"
 
-                        if sftp.exists(filename[:-4]):
-                            sftp.unlink(filename[:-4])
+                            if sftp.exists(filename[:-4]):
+                                sftp.unlink(filename[:-4])
 
-                        sftp.putfo(from_file, f"{filename}")
+                            sftp.putfo(from_file, f"{filename}")
 
-                        sftp.rename(filename, filename[:-4])
-
+                            sftp.rename(filename, filename[:-4])
+                    except Exception:
+                        add_file_log_entry(
+                            task_run_id=self.get_variable("workspace_id"),
+                            task_id=self.get_variable("task_id"),
+                            step_id=self.get_variable("step_id"),
+                            filename=file,
+                            status="error",
+                        )
+                        error = True
+                    else:
                         uploaded_files.append(file)
 
-                    size = os.path.getsize(os.path.join(workspace_directory, file))
-                    duration = time.time() - start_time
+                        size = os.path.getsize(os.path.join(workspace_directory, file))
+                        duration = time.time() - start_time
 
-                    add_file_log_entry(
-                        task_run_id=self.get_variable("workspace_id"),
-                        task_id=self.get_variable("task_id"),
-                        step_id=self.get_variable("step_id"),
-                        filename=file,
-                        status="uploaded",
-                        duration_sec=duration,
-                        filesize=size,
-                        bytes_per_sec=size / duration,
-                    )
+                        add_file_log_entry(
+                            task_run_id=self.get_variable("workspace_id"),
+                            task_id=self.get_variable("task_id"),
+                            step_id=self.get_variable("step_id"),
+                            filename=file,
+                            status="uploaded",
+                            duration_sec=duration,
+                            filesize=size,
+                            bytes_per_sec=size / duration,
+                        )
 
         logging.info(f"Uploaded files {uploaded_files} to '{host.name}'.")
 
@@ -210,3 +241,6 @@ class Upload(Plugin):
         self.set_variable("found_files", files)
         self.set_variable("matched_files", files_to_upload)
         self.set_variable("uploaded_files", uploaded_files)
+
+        if error:
+            raise Exception("error in file transfer")

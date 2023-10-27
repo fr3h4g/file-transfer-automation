@@ -37,6 +37,9 @@ class Download(Plugin):
 
     def process(self):
         """Download file from FTP."""
+
+        error = False
+
         if "host" in self.variables:
             host = self.get_variable("host")
         else:
@@ -78,25 +81,36 @@ class Download(Plugin):
                 )
 
             for file in files_to_download:
-                start_time = time.time()
+                try:
+                    start_time = time.time()
 
-                with open(os.path.join(workspace_directory, file), "wb") as to_file:
-                    to_file.write(ftp.get_file(file))
+                    with open(os.path.join(workspace_directory, file), "wb") as to_file:
+                        to_file.write(ftp.get_file(file))
 
-                downloaded_files.append(file)
-                size = os.path.getsize(os.path.join(workspace_directory, file))
-                duration = time.time() - start_time
+                except Exception:
+                    add_file_log_entry(
+                        task_run_id=self.get_variable("workspace_id"),
+                        task_id=self.get_variable("task_id"),
+                        step_id=self.get_variable("step_id"),
+                        filename=file,
+                        status="error",
+                    )
+                    error = True
+                else:
+                    downloaded_files.append(file)
+                    size = os.path.getsize(os.path.join(workspace_directory, file))
+                    duration = time.time() - start_time
 
-                add_file_log_entry(
-                    task_run_id=self.get_variable("workspace_id"),
-                    task_id=self.get_variable("task_id"),
-                    step_id=self.get_variable("step_id"),
-                    filename=file,
-                    status="downloaded",
-                    duration_sec=duration,
-                    filesize=size,
-                    bytes_per_sec=size / duration,
-                )
+                    add_file_log_entry(
+                        task_run_id=self.get_variable("workspace_id"),
+                        task_id=self.get_variable("task_id"),
+                        step_id=self.get_variable("step_id"),
+                        filename=file,
+                        status="downloaded",
+                        duration_sec=duration,
+                        filesize=size,
+                        bytes_per_sec=size / duration,
+                    )
 
             if self.arguments.delete_files:
                 for file in downloaded_files:
@@ -110,6 +124,9 @@ class Download(Plugin):
         self.set_variable("matched_files", files_to_download)
         self.set_variable("downloaded_files", downloaded_files)
 
+        if error:
+            raise Exception("error in file transfer")
+
 
 class Upload(Plugin):
     """Upload file to FTP."""
@@ -120,6 +137,9 @@ class Upload(Plugin):
 
     def process(self):
         """Upload file to FTP."""
+
+        error = False
+
         if "host" in self.variables:
             host = self.get_variable("host")
         else:
@@ -162,36 +182,48 @@ class Upload(Plugin):
                 )
 
             for file in files_to_upload:
-                start_time = time.time()
-                with open(os.path.join(workspace_directory, file), "rb") as from_file:
-                    if not host.directory:
-                        host.directory = "."
-                    filename = str(os.path.join(host.directory, file)) + ".tmp"
+                try:
+                    start_time = time.time()
+                    with open(
+                        os.path.join(workspace_directory, file), "rb"
+                    ) as from_file:
+                        if not host.directory:
+                            host.directory = "."
+                        filename = str(os.path.join(host.directory, file)) + ".tmp"
 
-                    try:  # noqa: SIM105
-                        ftp.remove(filename[:-4])
-                    except Exception:
-                        pass
+                        try:  # noqa: SIM105
+                            ftp.remove(filename[:-4])
+                        except Exception:
+                            pass
 
-                    ftp.send_file(filename, from_file)
+                        ftp.send_file(filename, from_file)
 
-                    ftp.rename(filename, filename[:-4])
-
+                        ftp.rename(filename, filename[:-4])
+                except Exception:
+                    add_file_log_entry(
+                        task_run_id=self.get_variable("workspace_id"),
+                        task_id=self.get_variable("task_id"),
+                        step_id=self.get_variable("step_id"),
+                        filename=file,
+                        status="error",
+                    )
+                    error = True
+                else:
                     uploaded_files.append(file)
 
-                size = os.path.getsize(os.path.join(workspace_directory, file))
-                duration = time.time() - start_time
+                    size = os.path.getsize(os.path.join(workspace_directory, file))
+                    duration = time.time() - start_time
 
-                add_file_log_entry(
-                    task_run_id=self.get_variable("workspace_id"),
-                    task_id=self.get_variable("task_id"),
-                    step_id=self.get_variable("step_id"),
-                    filename=file,
-                    status="uploaded",
-                    duration_sec=duration,
-                    filesize=size,
-                    bytes_per_sec=size / duration,
-                )
+                    add_file_log_entry(
+                        task_run_id=self.get_variable("workspace_id"),
+                        task_id=self.get_variable("task_id"),
+                        step_id=self.get_variable("step_id"),
+                        filename=file,
+                        status="uploaded",
+                        duration_sec=duration,
+                        filesize=size,
+                        bytes_per_sec=size / duration,
+                    )
 
             ftp.close()
 
@@ -204,3 +236,6 @@ class Upload(Plugin):
         self.set_variable("found_files", files)
         self.set_variable("matched_files", files_to_upload)
         self.set_variable("uploaded_files", uploaded_files)
+
+        if error:
+            raise Exception("error in file transfer")

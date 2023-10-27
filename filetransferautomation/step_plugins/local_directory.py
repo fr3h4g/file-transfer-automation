@@ -62,6 +62,9 @@ class DownloadFiles(Plugin):
 
     def process(self):
         """Download files from local directory."""
+
+        error = False
+
         if "host" in self.variables:
             host = self.get_variable("host")
         else:
@@ -97,25 +100,36 @@ class DownloadFiles(Plugin):
             )
 
         for file in files_to_download:
-            start_time = time.time()
-            with open(os.path.join(remote_directory, file), "rb") as from_file:
-                file_data = from_file.read()
-            with open(os.path.join(workspace_directory, file), "wb") as to_file:
-                to_file.write(file_data)
-            size = os.path.getsize(os.path.join(workspace_directory, file))
-            duration = time.time() - start_time
+            try:
+                start_time = time.time()
+                with open(os.path.join(remote_directory, file), "rb") as from_file:
+                    file_data = from_file.read()
+                with open(os.path.join(workspace_directory, file), "wb") as to_file:
+                    to_file.write(file_data)
+            except Exception:
+                add_file_log_entry(
+                    task_run_id=self.get_variable("workspace_id"),
+                    task_id=self.get_variable("task_id"),
+                    step_id=self.get_variable("step_id"),
+                    filename=file,
+                    status="error",
+                )
+                error = True
+            else:
+                size = os.path.getsize(os.path.join(workspace_directory, file))
+                duration = time.time() - start_time
 
-            add_file_log_entry(
-                task_run_id=self.get_variable("workspace_id"),
-                task_id=self.get_variable("task_id"),
-                step_id=self.get_variable("step_id"),
-                filename=file,
-                status="downloaded",
-                filesize=size,
-                duration_sec=duration,
-                bytes_per_sec=size / duration,
-            )
-            downloaded_files.append(file)
+                add_file_log_entry(
+                    task_run_id=self.get_variable("workspace_id"),
+                    task_id=self.get_variable("task_id"),
+                    step_id=self.get_variable("step_id"),
+                    filename=file,
+                    status="downloaded",
+                    filesize=size,
+                    duration_sec=duration,
+                    bytes_per_sec=size / duration,
+                )
+                downloaded_files.append(file)
 
         logging.info(f"Downloaded files {downloaded_files} from '{host.name}'.")
 
@@ -127,6 +141,9 @@ class DownloadFiles(Plugin):
         self.set_variable("matched_files", files_to_download)
         self.set_variable("downloaded_files", downloaded_files)
 
+        if error:
+            raise Exception("error in file transfer")
+
 
 class UploadFiles(Plugin):
     """Upload files to local directory."""
@@ -137,6 +154,9 @@ class UploadFiles(Plugin):
 
     def process(self):
         """Upload files to local directory."""
+
+        error = False
+
         if "host" in self.variables:
             host = self.get_variable("host")
         else:
@@ -172,25 +192,36 @@ class UploadFiles(Plugin):
             )
 
         for file in files_to_upload:
-            start_time = time.time()
-            with open(os.path.join(workspace_directory, file), "rb") as from_file:
-                file_data = from_file.read()
-            with open(os.path.join(remote_directory, file), "wb") as to_file:
-                to_file.write(file_data)
-            uploaded_files.append(file)
-            size = os.path.getsize(os.path.join(workspace_directory, file))
-            duration = time.time() - start_time
+            try:
+                start_time = time.time()
+                with open(os.path.join(workspace_directory, file), "rb") as from_file:
+                    file_data = from_file.read()
+                with open(os.path.join(remote_directory, file), "wb") as to_file:
+                    to_file.write(file_data)
+            except Exception:
+                add_file_log_entry(
+                    task_run_id=self.get_variable("workspace_id"),
+                    task_id=self.get_variable("task_id"),
+                    step_id=self.get_variable("step_id"),
+                    filename=file,
+                    status="error",
+                )
+                error = True
+            else:
+                uploaded_files.append(file)
+                size = os.path.getsize(os.path.join(workspace_directory, file))
+                duration = time.time() - start_time
 
-            add_file_log_entry(
-                task_run_id=self.get_variable("workspace_id"),
-                task_id=self.get_variable("task_id"),
-                step_id=self.get_variable("step_id"),
-                filename=file,
-                status="uploaded",
-                duration_sec=duration,
-                filesize=size,
-                bytes_per_sec=size / duration,
-            )
+                add_file_log_entry(
+                    task_run_id=self.get_variable("workspace_id"),
+                    task_id=self.get_variable("task_id"),
+                    step_id=self.get_variable("step_id"),
+                    filename=file,
+                    status="uploaded",
+                    duration_sec=duration,
+                    filesize=size,
+                    bytes_per_sec=size / duration,
+                )
 
         logging.info(f"Uploaded files {uploaded_files} to '{host.name}'.")
 
@@ -201,3 +232,6 @@ class UploadFiles(Plugin):
         self.set_variable("found_files", files)
         self.set_variable("matched_files", files_to_upload)
         self.set_variable("uploaded_files", uploaded_files)
+
+        if error:
+            raise Exception("error in file transfer")

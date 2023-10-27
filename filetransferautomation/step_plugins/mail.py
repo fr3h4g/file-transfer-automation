@@ -82,6 +82,9 @@ class SendFiles(Plugin):
 
     def process(self):
         """Send mail with files."""
+
+        error = False
+
         workspace_directory = self.get_variable("workspace_directory")
         files_to_mail = []
         files = []
@@ -105,28 +108,48 @@ class SendFiles(Plugin):
             if compare_filter(file, self.arguments.file_filter):
                 files_to_mail.append(file)
 
-        if files_to_mail:
-            send_mail(
-                self.arguments.from_address,
-                self.arguments.to_addresses,
-                self.arguments.subject,
-                self.arguments.body,
-                workspace_directory,
-                files_to_mail,
+        for file in files_to_mail:
+            add_file_log_entry(
+                task_run_id=self.get_variable("workspace_id"),
+                task_id=self.get_variable("task_id"),
+                step_id=self.get_variable("step_id"),
+                filename=file,
+                status="mailing",
             )
 
-            for file in files_to_mail:
-                mailed_files.append(file)
-                size = os.path.getsize(os.path.join(workspace_directory, file))
-
-                add_file_log_entry(
-                    task_run_id=self.get_variable("workspace_id"),
-                    task_id=self.get_variable("task_id"),
-                    step_id=self.get_variable("step_id"),
-                    filename=file,
-                    status="mailed",
-                    filesize=size,
+        if files_to_mail:
+            try:
+                send_mail(
+                    self.arguments.from_address,
+                    self.arguments.to_addresses,
+                    self.arguments.subject,
+                    self.arguments.body,
+                    workspace_directory,
+                    files_to_mail,
                 )
+            except Exception:
+                for file in files_to_mail:
+                    add_file_log_entry(
+                        task_run_id=self.get_variable("workspace_id"),
+                        task_id=self.get_variable("task_id"),
+                        step_id=self.get_variable("step_id"),
+                        filename=file,
+                        status="error",
+                    )
+                error = True
+            else:
+                for file in files_to_mail:
+                    mailed_files.append(file)
+                    size = os.path.getsize(os.path.join(workspace_directory, file))
+
+                    add_file_log_entry(
+                        task_run_id=self.get_variable("workspace_id"),
+                        task_id=self.get_variable("task_id"),
+                        step_id=self.get_variable("step_id"),
+                        filename=file,
+                        status="mailed",
+                        filesize=size,
+                    )
 
             logging.info(
                 f"Mailed files {mailed_files} to: '{self.arguments.to_addresses}'."
@@ -139,3 +162,6 @@ class SendFiles(Plugin):
         self.set_variable("found_files", files)
         self.set_variable("matched_files", files_to_mail)
         self.set_variable("mailed_files", mailed_files)
+
+        if error:
+            raise Exception("error in file transfer")
